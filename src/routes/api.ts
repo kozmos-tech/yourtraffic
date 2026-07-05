@@ -28,18 +28,30 @@ api.get('/health', (c) =>
 // Called cross-origin by the tracker on every site, so it needs open CORS.
 api.use('/event', cors({ origin: '*', allowMethods: ['POST', 'OPTIONS'] }))
 
+// A pageview payload is tiny, so anything larger is junk or abuse. Reject early,
+// before parsing, and keep the stored strings bounded so no single event can
+// bloat a row. pathname is capped generously, hostnames at their real max.
+const MAX_BODY = 2048
+const MAX_PATH = 512
+
+function clip(s: string, max: number): string {
+  return s.length > max ? s.slice(0, max) : s
+}
+
 // Record a pageview. Always answers 202 so a misconfigured or unknown site never
 // surfaces an error in a visitor's console. The body is sent as text/plain by
 // sendBeacon to avoid a CORS preflight.
 api.post('/event', async (c) => {
   const raw = await c.req.text()
+  if (!raw || raw.length > MAX_BODY) return c.body(null, 202)
+
   let data: { u?: string; r?: string | null }
   try {
     data = JSON.parse(raw)
   } catch {
     return c.body(null, 202)
   }
-  if (!data.u) return c.body(null, 202)
+  if (!data.u || typeof data.u !== 'string') return c.body(null, 202)
 
   let url: URL
   try {
@@ -47,6 +59,7 @@ api.post('/event', async (c) => {
   } catch {
     return c.body(null, 202)
   }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return c.body(null, 202)
 
   const domain = normalizeDomain(url.hostname)
   const proj = await db.query.project.findFirst({
@@ -54,14 +67,15 @@ api.post('/event', async (c) => {
   })
   if (!proj) return c.body(null, 202)
 
+  const ref = typeof data.r === 'string' ? data.r : null
   const ua = c.req.header('user-agent') || ''
   const { browser, os, device } = parseUA(ua)
 
   await db.insert(event).values({
     id: newId(),
     projectId: proj.id,
-    pathname: url.pathname || '/',
-    referrer: referrerHost(data.r, domain),
+    pathname: clip(url.pathname || '/', MAX_PATH),
+    referrer: referrerHost(ref, domain),
     country: country(c.req.raw.headers),
     browser,
     os,
