@@ -26,4 +26,4 @@ To deploy:
 npm install
 vc deploy
 ```
-# yourtraffic
+# YourTraffic

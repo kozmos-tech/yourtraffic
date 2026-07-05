@@ -1,7 +1,9 @@
-import { Layout, Logo } from './ui'
+import { Layout } from '../components/layout'
+import { Logo } from '../components/logo'
+import { GITHUB } from '../lib/constants'
 
 export const AppPage = () => (
-  <Layout title="yourtraffic dashboard" desc="Your yourtraffic analytics dashboard.">
+  <Layout title="YourTraffic dashboard" desc="Your YourTraffic analytics dashboard.">
     <div class="center-screen">
       <div class="app-card">
         <Logo size={30} />
@@ -12,7 +14,7 @@ export const AppPage = () => (
           release, or wire up the API today.
         </p>
         <div class="cta-row" style="justify-content:center;margin-top:22px">
-          <a class="btn btn-primary btn-sm" href="https://github.com/kozmos-tech/yourtraffic">Follow on GitHub</a>
+          <a class="btn btn-primary btn-sm" href={GITHUB}>Follow on GitHub</a>
           <a class="btn btn-sm" href="/">Back home</a>
         </div>
       </div>
