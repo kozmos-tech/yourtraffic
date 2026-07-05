@@ -34,7 +34,7 @@ app.all('/mcp', (c) =>
   c.json({ stub: true, message: 'yourtraffic MCP server is not live yet.' }, 501)
 )
 
-// llms.txt — real content to be authored later.
+// llms.txt placeholder. Real content to be authored later.
 app.get('/llms.txt', (c) =>
   c.text(
     [
@@ -42,11 +42,11 @@ app.get('/llms.txt', (c) =>
       '',
       '> Open-source, privacy-first web analytics. Unlimited projects, a REST API and native MCP support.',
       '',
-      'Placeholder — full llms.txt coming soon.',
+      'This is a placeholder for now. The full llms.txt is coming soon.',
       '',
       '## Docs',
-      '- REST API: https://api.yourtraffic.dev/v1/stats',
-      '- MCP server: https://yourtraffic.dev/mcp',
+      '- REST API at https://api.yourtraffic.dev/v1/stats',
+      '- MCP server at https://yourtraffic.dev/mcp',
       '',
     ].join('\n')
   )

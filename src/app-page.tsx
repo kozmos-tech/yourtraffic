@@ -1,7 +1,7 @@
 import { Layout, Logo } from './ui'
 
 export const AppPage = () => (
-  <Layout title="Dashboard — yourtraffic" desc="Your yourtraffic analytics dashboard.">
+  <Layout title="yourtraffic dashboard" desc="Your yourtraffic analytics dashboard.">
     <div class="center-screen">
       <div class="app-card">
         <Logo size={30} />
