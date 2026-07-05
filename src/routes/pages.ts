@@ -1,6 +1,8 @@
 import { Hono } from 'hono'
 import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 import { Landing } from '../pages/landing.js'
+import { BlogIndex, BlogPost } from '../pages/blog.js'
+import { getPost } from '../lib/blog.js'
 import { AppPage } from '../pages/app.js'
 import { ProjectPage } from '../pages/project.js'
 import { LoginPage, SignupPage } from '../pages/auth.js'
@@ -14,6 +16,14 @@ import { tracker } from '../lib/tracker.js'
 export const pages = new Hono()
 
 pages.get('/', (c) => c.html(doc(Landing())))
+
+pages.get('/blog', (c) => c.html(doc(BlogIndex())))
+pages.get('/blog/:slug', (c) => {
+  const post = getPost(c.req.param('slug'))
+  if (!post) return c.redirect('/blog')
+  return c.html(doc(BlogPost(post)))
+})
+
 pages.get('/login', (c) => c.html(doc(LoginPage())))
 pages.get('/signup', (c) => c.html(doc(SignupPage())))
 

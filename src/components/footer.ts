@@ -18,6 +18,7 @@ export const Footer = () => `<footer>
         </div>
         <div class="fcol">
           <h4>Project</h4>
+          <a href="/blog">Blog</a>
           <a href="${GITHUB}">GitHub</a>
           <a href="${GITHUB}/blob/main/LICENSE">License (MIT)</a>
         </div>

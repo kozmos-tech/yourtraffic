@@ -4,10 +4,13 @@ import { Footer } from '../components/footer.js'
 import { Modals } from '../components/modals.js'
 import { GITHUB } from '../lib/constants.js'
 import { esc } from '../lib/html.js'
+import { posts } from '../lib/blog.js'
 
 const BARS = [34, 52, 41, 63, 48, 72, 58, 80, 66, 91, 74, 60, 83, 97]
 
 const snippet = '<script defer src="https://yourtraffic.dev/script.js"></script>'
+
+const useCases = posts.filter((p) => p.useCase)
 
 export const Landing = () => {
   const body = `${Nav()}
@@ -54,6 +57,25 @@ export const Landing = () => {
         <span>100% open source</span>
       </div>
     </div>
+
+    <section class="blk" id="use-cases">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2>Use cases</h2>
+          <p>Real ways people use YourTraffic, from agencies with many client sites to indie hackers and teams giving AI agents access to their traffic.</p>
+        </div>
+        <div class="uc-list">
+          ${useCases
+            .map(
+              (p) => `<a class="uc-row" href="/blog/${esc(p.slug)}">
+            <span class="uc-row-t">${esc(p.title)}</span>
+            <span class="uc-row-d">${esc(p.desc)}</span>
+          </a>`
+            )
+            .join('')}
+        </div>
+      </div>
+    </section>
 
     <section class="blk" id="open-source">
       <div class="wrap">
