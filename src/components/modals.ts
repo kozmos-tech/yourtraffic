@@ -41,8 +41,7 @@ const mcpConfigSample =
   `{\n` +
   `  "mcpServers": {\n` +
   `    "yourtraffic": {\n` +
-  `      "url": "https://yourtraffic.dev/mcp",\n` +
-  `      "headers": { "Authorization": "Bearer yt_live_…" }\n` +
+  `      "url": "https://yourtraffic.dev/mcp"\n` +
   `    }\n  }\n}`
 
 const DocsModal = () => `<div class="modal" id="m-docs" role="dialog" aria-modal="true" aria-label="Docs">
@@ -82,6 +81,7 @@ const McpModal = () => `<div class="modal" id="m-mcp" role="dialog" aria-modal="
         <div class="code-top">MCP client config</div>
         <pre>${mcpConfigSample}</pre>
       </div>
+      <p>No api key to paste. The server uses OAuth, so your client opens a browser once for you to sign in and approve access.</p>
       <h4>Then just ask</h4>
       <ul>
         <li>“How many visitors did my blog get last week?”</li>

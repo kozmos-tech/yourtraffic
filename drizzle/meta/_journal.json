@@ -15,6 +15,13 @@
       "when": 1783249343574,
       "tag": "0001_minor_blazing_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783256497155,
+      "tag": "0002_ancient_nitro",
+      "breakpoints": true
     }
   ]
 }

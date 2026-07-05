@@ -3,13 +3,18 @@ import { Logo } from '../components/logo.js'
 
 type Mode = 'login' | 'signup'
 
-// Posts the form to better-auth, then sends the user to the dashboard.
+// Posts the form to better-auth, then sends the user to the dashboard. When the
+// page was opened as part of an MCP OAuth flow (the authorize endpoint forwards
+// its query here), it instead replays the authorize request once signed in, so
+// the agent gets its code. In that case the sign-in response is a redirect, so
+// we do not follow it and read success from the opaque redirect.
 const authScript = (mode: Mode) => `
 (function () {
   var form = document.getElementById('auth-form');
   var err = document.getElementById('auth-err');
   var btn = document.getElementById('auth-submit');
   var endpoint = ${mode === 'signup' ? "'/api/auth/sign-up/email'" : "'/api/auth/sign-in/email'"};
+  var oauth = new URLSearchParams(location.search).has('client_id');
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     err.textContent = '';
@@ -18,9 +23,14 @@ const authScript = (mode: Mode) => `
     try {
       var res = await fetch(endpoint, {
         method: 'POST',
+        redirect: oauth ? 'manual' : 'follow',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (oauth && (res.type === 'opaqueredirect' || res.ok)) {
+        window.location.href = '/api/auth/mcp/authorize' + location.search;
+        return;
+      }
       if (res.ok) { window.location.href = '/app'; return; }
       var body = await res.json().catch(function () { return {}; });
       err.textContent = body.message || 'Something went wrong. Please try again.';

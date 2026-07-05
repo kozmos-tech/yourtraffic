@@ -74,6 +74,60 @@ export const project = pgTable('project', {
     .notNull(),
 })
 
+// OAuth tables for the MCP server. better-auth's mcp plugin turns this app into
+// an OAuth authorization server so agents can connect over the Model Context
+// Protocol. Field names (camelCase) match the plugin's schema so the drizzle
+// adapter maps cleanly; the SQL column names stay snake_case like the rest.
+
+// A dynamically registered OAuth client (one per MCP app that connects).
+export const oauthApplication = pgTable('oauth_application', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  icon: text('icon'),
+  metadata: text('metadata'),
+  clientId: text('client_id').notNull().unique(),
+  clientSecret: text('client_secret'),
+  redirectUrls: text('redirect_urls').notNull(),
+  type: text('type').notNull(),
+  disabled: boolean('disabled').default(false),
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+})
+
+// An issued access token, bound to a user and client. getMcpSession looks the
+// bearer token up here to authorize each MCP request.
+export const oauthAccessToken = pgTable('oauth_access_token', {
+  id: text('id').primaryKey(),
+  accessToken: text('access_token').notNull().unique(),
+  refreshToken: text('refresh_token').notNull().unique(),
+  accessTokenExpiresAt: timestamp('access_token_expires_at').notNull(),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at').notNull(),
+  clientId: text('client_id')
+    .notNull()
+    .references(() => oauthApplication.clientId, { onDelete: 'cascade' }),
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
+  scopes: text('scopes').notNull(),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+})
+
+// A record that a user granted a client access, so repeat connections skip the
+// consent step.
+export const oauthConsent = pgTable('oauth_consent', {
+  id: text('id').primaryKey(),
+  clientId: text('client_id')
+    .notNull()
+    .references(() => oauthApplication.clientId, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  scopes: text('scopes').notNull(),
+  consentGiven: boolean('consent_given').notNull(),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull(),
+})
+
 // One row per pageview. No cookies and no personal data: a visitor is a daily
 // rotating hash of ip + user agent + project, so it cannot be traced across days.
 export const event = pgTable(
