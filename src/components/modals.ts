@@ -20,10 +20,7 @@ const modalScript = `
 `
 
 const curlSample =
-  `curl https://api.yourtraffic.dev/v1/stats \\\n` +
-  `  -d site=yourtraffic.dev \\\n` +
-  `  -d period=7d \\\n` +
-  `  -d group=day \\\n` +
+  `curl "https://yourtraffic.dev/api/v1/stats?period=7d&group=day" \\\n` +
   `  -H "Authorization: Bearer yt_live_…"`
 
 const responseSample =
