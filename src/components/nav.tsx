@@ -10,7 +10,9 @@ export const Nav = () => (
       <div class="nav-links">
         <a class="n" href="#" data-open="m-docs">Docs</a>
         <a class="n" href="#" data-open="m-mcp">MCP</a>
-        <a class="btn btn-primary btn-sm" href="/app">Start for free</a>
+        <a class="n" href="/llms.txt">llms.txt</a>
+        <a class="n" href="/login">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="/signup">Get started</a>
       </div>
     </div>
   </nav>

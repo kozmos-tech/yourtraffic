@@ -25,7 +25,7 @@ export const Landing = () => (
           <code>{'<script defer src="https://yourtraffic.dev/script.js"></script>'}</code>
         </div>
         <div class="cta-row">
-          <a class="btn btn-primary" href="/app">Start for free</a>
+          <a class="btn btn-primary" href="/signup">Start for free</a>
           <a class="btn" href={GITHUB}>View on GitHub</a>
         </div>
 
@@ -69,7 +69,7 @@ export const Landing = () => (
           <p>Self-host YourTraffic for free under the MIT license, or let us run it for you. Same product, unlimited projects, no dark patterns.</p>
         </div>
         <div class="cta-row">
-          <a class="btn btn-primary" href="/app">Start free in the cloud</a>
+          <a class="btn btn-primary" href="/signup">Start free in the cloud</a>
           <a class="btn" href={GITHUB + '#self-hosting'}>Read the self-host guide</a>
         </div>
       </div>
