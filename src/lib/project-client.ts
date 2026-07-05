@@ -23,7 +23,8 @@ export const projectClient = /* js */ `(function () {
     { by: 'device', label: 'Devices' },
   ];
 
-  var state = { period: '7d', metric: 'visitors', tab: 'page', stats: null, loading: true };
+  var state = { period: '7d', metric: 'visitors', stats: null, loading: true };
+  var BY_KEYS = TABS.map(function (t) { return t.by; }).join(',');
 
   /* -------------------------------------------------------------- helpers -- */
 
@@ -128,7 +129,7 @@ export const projectClient = /* js */ `(function () {
   function loadStats() {
     state.loading = true;
     var period = state.period;
-    api('/api/projects/' + proj.id + '/stats?period=' + period + '&by=' + state.tab)
+    api('/api/projects/' + proj.id + '/stats?period=' + period + '&by=' + BY_KEYS)
       .then(function (res) {
         if (state.period !== period) return;
         state.stats = res;
@@ -136,7 +137,7 @@ export const projectClient = /* js */ `(function () {
         renderBody();
       })
       .catch(function (e) {
-        state.stats = { totals: { visitors: 0, pageviews: 0 }, series: [], breakdown: [], error: e.message };
+        state.stats = { totals: { visitors: 0, pageviews: 0 }, series: [], breakdowns: {}, error: e.message };
         state.loading = false;
         renderBody();
       });
@@ -174,6 +175,15 @@ export const projectClient = /* js */ `(function () {
     }));
   }
 
+  // Buckets come back as 'YYYY-MM-DD' or, for the 24h view, 'YYYY-MM-DD HH:00'.
+  // Show just the time for hourly and drop the year for daily so labels stay short.
+  function tickLabel(date) {
+    if (!date) return '';
+    if (date.indexOf(' ') > -1) return date.split(' ')[1];
+    var p = date.split('-');
+    return p.length === 3 ? p[1] + '-' + p[2] : date;
+  }
+
   function chart(series, metric) {
     var box = el('div', { class: 'db-chart' });
     if (!series || !series.length) {
@@ -186,50 +196,65 @@ export const projectClient = /* js */ `(function () {
     var bars = el('div', { class: 'db-bars' });
     series.forEach(function (d) {
       var v = d[metric] || 0;
-      var b = el('div', {
-        class: 'db-b' + (v === 0 ? ' empty' : ''),
+      var col = el('div', {
+        class: 'db-bcol',
         title: d.date + ', ' + num(v) + ' ' + metric,
       });
+      var b = el('div', { class: 'db-b' + (v === 0 ? ' empty' : '') });
       b.style.height = (v === 0 ? 2 : Math.max(3, Math.round((v / max) * 100))) + '%';
-      bars.appendChild(b);
+      col.appendChild(b);
+      bars.appendChild(col);
     });
     box.appendChild(bars);
     box.appendChild(el('div', { class: 'db-xaxis' }, [
-      el('span', null, series[0].date),
-      el('span', null, series[series.length - 1].date),
+      el('span', null, tickLabel(series[0].date)),
+      el('span', null, tickLabel(series[series.length - 1].date)),
     ]));
     return box;
   }
 
-  function labelFor(tab, name) {
-    if (name == null || name === '') return tab === 'referrer' ? 'Direct' : 'Unknown';
+  // Turn a 2-letter country code into a flag emoji by mapping each letter to its
+  // regional indicator symbol. Returns '' if the code is not two ascii letters.
+  function flag(code) {
+    if (!/^[a-zA-Z]{2}$/.test(code || '')) return '';
+    var cc = code.toUpperCase();
+    return String.fromCodePoint(0x1f1e6 + cc.charCodeAt(0) - 65) +
+      String.fromCodePoint(0x1f1e6 + cc.charCodeAt(1) - 65);
+  }
+
+  var regionNames = null;
+  try { regionNames = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
+  function countryName(code) {
+    if (regionNames) { try { return regionNames.of(code.toUpperCase()) || code; } catch (e) {} }
+    return code;
+  }
+
+  function labelFor(by, name) {
+    if (name == null || name === '') return by === 'referrer' ? 'Direct' : 'Unknown';
+    if (by === 'country') {
+      var fl = flag(name);
+      return (fl ? fl + ' ' : '') + countryName(name);
+    }
     return name;
   }
 
-  function breakdown(s) {
-    var box = el('div', { class: 'db-break' });
-    box.appendChild(el('div', { class: 'db-tabs' }, TABS.map(function (t) {
-      return el('button', {
-        type: 'button',
-        class: 'db-tab' + (state.tab === t.by ? ' on' : ''),
-        onClick: function () { if (state.tab !== t.by) { state.tab = t.by; loadStats(); } },
-      }, t.label);
-    })));
-
-    var list = el('div', { class: 'db-list' });
-    var rows = (s && s.breakdown) || [];
+  // One breakdown card (Pages, Referrers, ...). Compact list of the top rows,
+  // shown two per row so the common dimensions are visible without navigation.
+  function breakdownCard(tab, rows) {
+    var body = el('div', { class: 'db-panel-body' });
+    rows = rows || [];
     if (!rows.length) {
-      list.appendChild(el('div', { class: 'db-loading' }, 'No data yet.'));
+      body.appendChild(el('div', { class: 'db-panel-empty' }, 'No data yet.'));
     } else {
       var total = 0;
-      var max = 1;
-      rows.forEach(function (r) { total += r.visitors || 0; if ((r.visitors || 0) > max) max = r.visitors; });
-      rows.forEach(function (r) {
+      rows.forEach(function (r) { total += r.visitors || 0; });
+      if (total < 1) total = 1;
+      rows.slice(0, 7).forEach(function (r) {
         var bar = el('div', { class: 'db-rowbar' });
-        bar.style.width = Math.round(((r.visitors || 0) / max) * 100) + '%';
-        list.appendChild(el('div', { class: 'db-row' }, [
+        bar.style.width = Math.round(((r.visitors || 0) / total) * 100) + '%';
+        body.appendChild(el('div', { class: 'db-row' }, [
           bar,
-          el('div', { class: 'db-rowlabel' }, labelFor(state.tab, r.name)),
+          el('div', { class: 'db-rowlabel' }, labelFor(tab.by, r.name)),
           el('div', { class: 'db-rowmeta' }, [
             el('span', { class: 'db-rowpct' }, pct(r.visitors || 0, total)),
             el('span', { class: 'db-rowval' }, num(r.visitors)),
@@ -237,8 +262,17 @@ export const projectClient = /* js */ `(function () {
         ]));
       });
     }
-    box.appendChild(list);
-    return box;
+    return el('div', { class: 'db-panel' }, [
+      el('div', { class: 'db-panel-head' }, tab.label),
+      body,
+    ]);
+  }
+
+  function breakdowns(s) {
+    var data = (s && s.breakdowns) || {};
+    return el('div', { class: 'db-grid' }, TABS.map(function (t) {
+      return breakdownCard(t, data[t.by]);
+    }));
   }
 
   function installBanner() {
@@ -260,7 +294,7 @@ export const projectClient = /* js */ `(function () {
       body.appendChild(el('div', { class: 'db-boot' }, el('span', { class: 'db-spin', 'aria-hidden': 'true' })));
       return;
     }
-    var s = state.stats || { totals: { visitors: 0, pageviews: 0 }, series: [], breakdown: [] };
+    var s = state.stats || { totals: { visitors: 0, pageviews: 0 }, series: [], breakdowns: {} };
     if (s.error) body.appendChild(el('div', { class: 'db-err' }, s.error));
 
     var empty = !s.totals || (s.totals.pageviews || 0) === 0;
@@ -268,7 +302,7 @@ export const projectClient = /* js */ `(function () {
 
     body.appendChild(metricCards(s.totals));
     body.appendChild(chart(s.series, state.metric));
-    body.appendChild(breakdown(s));
+    body.appendChild(breakdowns(s));
   }
 
   var settingsBtn = document.getElementById('pj-settings');

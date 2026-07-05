@@ -75,7 +75,7 @@ api.post('/event', async (c) => {
 /* ----------------------------------------------------------------- stats --- */
 
 const PERIOD_DAYS: Record<string, number> = { '24h': 1, '7d': 7, '30d': 30, '12mo': 365 }
-const GROUPS = new Set(['day', 'week', 'month'])
+const GROUPS = new Set(['hour', 'day', 'week', 'month'])
 const BREAKDOWNS: Record<string, string> = {
   page: 'pathname',
   referrer: 'referrer',
@@ -99,7 +99,7 @@ async function computeStats(
   const days = PERIOD_DAYS[period]
   if (!days) return { ok: false, status: 400, error: 'Unknown period.' }
 
-  const grp = group ?? (days > 90 ? 'month' : 'day')
+  const grp = group ?? (days <= 1 ? 'hour' : days > 90 ? 'month' : 'day')
   if (!GROUPS.has(grp)) return { ok: false, status: 400, error: 'Unknown group.' }
 
   const since = new Date(Date.now() - days * 86400000)
@@ -116,7 +116,8 @@ async function computeStats(
   // `grp` is whitelisted above, so it is safe to inline. It must be a literal
   // (not a bind param) or Postgres treats the select and group-by expressions as
   // different and rejects the query.
-  const bucket = sql`to_char(date_trunc(${sql.raw(`'${grp}'`)}, ${event.timestamp}), 'YYYY-MM-DD')`
+  const fmt = grp === 'hour' ? 'YYYY-MM-DD HH24:00' : 'YYYY-MM-DD'
+  const bucket = sql`to_char(date_trunc(${sql.raw(`'${grp}'`)}, ${event.timestamp}), ${sql.raw(`'${fmt}'`)})`
   const series = (await db
     .select({
       date: bucket as unknown as any,
@@ -136,21 +137,30 @@ async function computeStats(
   }
 
   if (by) {
-    const col = BREAKDOWNS[by]
-    if (!col) return { ok: false, status: 400, error: 'Unknown by.' }
-    const dim = sql.raw(`"${col}"`)
-    body.by = by
-    body.breakdown = (await db
-      .select({
-        name: dim as unknown as any,
-        visitors: sql<number>`count(distinct ${event.visitorHash})::int`,
-        pageviews: sql<number>`count(*)::int`,
-      })
-      .from(event)
-      .where(and(scope, sql`${dim} is not null`))
-      .groupBy(dim)
-      .orderBy(desc(sql`count(*)`))
-      .limit(20)) as { name: string; visitors: number; pageviews: number }[]
+    // `by` may be a single dimension or a comma list (the dashboard asks for all
+    // of them at once so it can show every breakdown without a round trip).
+    const keys = by.split(',').map((k) => k.trim()).filter(Boolean)
+    const breakdowns: Record<string, unknown> = {}
+    for (const key of keys) {
+      const col = BREAKDOWNS[key]
+      if (!col) return { ok: false, status: 400, error: 'Unknown by.' }
+      const dim = sql.raw(`"${col}"`)
+      breakdowns[key] = (await db
+        .select({
+          name: dim as unknown as any,
+          visitors: sql<number>`count(distinct ${event.visitorHash})::int`,
+          pageviews: sql<number>`count(*)::int`,
+        })
+        .from(event)
+        .where(and(scope, sql`${dim} is not null`))
+        .groupBy(dim)
+        .orderBy(desc(sql`count(*)`))
+        .limit(20)) as { name: string; visitors: number; pageviews: number }[]
+    }
+    body.breakdowns = breakdowns
+    // Keep the single-dimension shape for the public REST API and docs.
+    body.by = keys[0]
+    body.breakdown = breakdowns[keys[0]]
   }
 
   return { ok: true, body }
