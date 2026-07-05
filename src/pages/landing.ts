@@ -2,7 +2,7 @@ import { Layout } from '../components/layout.js'
 import { Nav } from '../components/nav.js'
 import { Footer } from '../components/footer.js'
 import { Modals } from '../components/modals.js'
-import { GITHUB } from '../lib/constants.js'
+import { GITHUB, SITE_URL } from '../lib/constants.js'
 import { esc } from '../lib/html.js'
 import { posts } from '../lib/blog.js'
 
@@ -94,9 +94,24 @@ export const Landing = () => {
 
     ${Modals()}`
 
+  const head = `<script type="application/ld+json">${JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'YourTraffic',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    url: SITE_URL,
+    description:
+      'Open-source, privacy-first web analytics. Unlimited projects, cookie-free tracking, a REST API and native MCP support.',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    sameAs: [GITHUB],
+  }).replace(/</g, '\\u003c')}</script>`
+
   return Layout({
     title: 'YourTraffic. Open-source, privacy-first web analytics',
     desc: 'The open-source alternative to Simple Analytics. Unlimited projects, cookie-free tracking, a REST API and native MCP support. Self-host or cloud.',
     children: body,
+    path: '',
+    head,
   })
 }

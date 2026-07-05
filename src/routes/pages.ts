@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm'
 import { Landing } from '../pages/landing.js'
 import { BlogIndex, BlogPost } from '../pages/blog.js'
-import { getPost } from '../lib/blog.js'
+import { getPost, posts } from '../lib/blog.js'
+import { SITE_URL } from '../lib/constants.js'
 import { AppPage } from '../pages/app.js'
 import { ProjectPage } from '../pages/project.js'
 import { LoginPage, SignupPage } from '../pages/auth.js'
@@ -26,6 +27,28 @@ pages.get('/blog/:slug', (c) => {
 
 pages.get('/login', (c) => c.html(doc(LoginPage())))
 pages.get('/signup', (c) => c.html(doc(SignupPage())))
+
+// Tell crawlers what to index and where the sitemap lives. The app and auth
+// pages are private, so keep them out of search results.
+pages.get('/robots.txt', (c) =>
+  c.body(
+    `User-agent: *\nAllow: /\nDisallow: /app\nDisallow: /login\nDisallow: /signup\n\nSitemap: ${SITE_URL}/sitemap.xml\n`,
+    200,
+    { 'Content-Type': 'text/plain; charset=utf-8' }
+  )
+)
+
+// Static marketing and blog URLs. The blog posts come straight from the content
+// module, so a new post is listed automatically.
+pages.get('/sitemap.xml', (c) => {
+  const urls = ['/', '/blog', ...posts.map((p) => `/blog/${p.slug}`)]
+  const body =
+    `<?xml version="1.0" encoding="UTF-8"?>\n` +
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    urls.map((u) => `  <url><loc>${SITE_URL}${u}</loc></url>`).join('\n') +
+    `\n</urlset>\n`
+  return c.body(body, 200, { 'Content-Type': 'application/xml; charset=utf-8' })
+})
 
 // The tracking script customers embed. Cached hard; it changes rarely.
 pages.get('/script.js', (c) =>
