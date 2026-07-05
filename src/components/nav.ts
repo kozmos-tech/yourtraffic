@@ -1,10 +1,9 @@
 import { Logo } from './logo.js'
 
-export const Nav = () => (
-  <nav class="nav">
+export const Nav = () => `<nav class="nav">
     <div class="wrap nav-inner">
       <a class="brand" href="/">
-        <Logo />
+        ${Logo()}
         YourTraffic
       </a>
       <div class="nav-links">
@@ -15,5 +14,4 @@ export const Nav = () => (
         <a class="btn btn-primary btn-sm" href="/signup">Get started</a>
       </div>
     </div>
-  </nav>
-)
+  </nav>`

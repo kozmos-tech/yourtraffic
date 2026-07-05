@@ -1,10 +1,7 @@
-import { Layout } from '../components/layout.js'
-import { Logo } from '../components/logo.js'
-
-type Mode = 'login' | 'signup'
-
+import { Layout } from '../components/layout.js';
+import { Logo } from '../components/logo.js';
 // Posts the form to better-auth, then sends the user to the dashboard.
-const authScript = (mode: Mode) => `
+const authScript = (mode) => `
 (function () {
   var form = document.getElementById('auth-form');
   var err = document.getElementById('auth-err');
@@ -30,34 +27,28 @@ const authScript = (mode: Mode) => `
     btn.disabled = false;
   });
 })();
-`
-
-const AuthPage = ({ mode }: { mode: Mode }) => {
-  const isSignup = mode === 'signup'
-  return (
-    <Layout
-      title={isSignup ? 'Create your account' : 'Sign in'}
-      desc="Access your YourTraffic dashboard."
-    >
-      <div class="center-screen">
+`;
+const AuthPage = (mode) => {
+    const isSignup = mode === 'signup';
+    const body = `<div class="center-screen">
         <div class="auth-card">
           <a class="auth-brand" href="/">
-            <Logo size={28} />
+            ${Logo(28)}
           </a>
-          <h1>{isSignup ? 'Create your account' : 'Welcome back'}</h1>
+          <h1>${isSignup ? 'Create your account' : 'Welcome back'}</h1>
           <p class="auth-sub">
-            {isSignup
-              ? 'Start tracking in minutes. No credit card needed.'
-              : 'Sign in to your YourTraffic dashboard.'}
+            ${isSignup
+        ? 'Start tracking in minutes. No credit card needed.'
+        : 'Sign in to your YourTraffic dashboard.'}
           </p>
 
           <form id="auth-form" class="auth-form" novalidate>
-            {isSignup && (
-              <label class="field">
+            ${isSignup
+        ? `<label class="field">
                 <span>Name</span>
                 <input name="name" type="text" autocomplete="name" required placeholder="Ada Lovelace" />
-              </label>
-            )}
+              </label>`
+        : ''}
             <label class="field">
               <span>Email</span>
               <input name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
@@ -67,9 +58,9 @@ const AuthPage = ({ mode }: { mode: Mode }) => {
               <input
                 name="password"
                 type="password"
-                autocomplete={isSignup ? 'new-password' : 'current-password'}
+                autocomplete="${isSignup ? 'new-password' : 'current-password'}"
                 required
-                minlength={8}
+                minlength="8"
                 placeholder="At least 8 characters"
               />
             </label>
@@ -77,28 +68,24 @@ const AuthPage = ({ mode }: { mode: Mode }) => {
             <div id="auth-err" class="auth-err" role="alert"></div>
 
             <button id="auth-submit" class="btn btn-primary auth-btn" type="submit">
-              {isSignup ? 'Create account' : 'Sign in'}
+              ${isSignup ? 'Create account' : 'Sign in'}
             </button>
           </form>
 
           <p class="auth-alt">
-            {isSignup ? (
-              <>
-                Already have an account? <a href="/login">Sign in</a>
-              </>
-            ) : (
-              <>
-                New here? <a href="/signup">Create an account</a>
-              </>
-            )}
+            ${isSignup
+        ? `Already have an account? <a href="/login">Sign in</a>`
+        : `New here? <a href="/signup">Create an account</a>`}
           </p>
         </div>
       </div>
 
-      <script dangerouslySetInnerHTML={{ __html: authScript(mode) }} />
-    </Layout>
-  )
-}
-
-export const LoginPage = () => <AuthPage mode="login" />
-export const SignupPage = () => <AuthPage mode="signup" />
+      <script>${authScript(mode)}</script>`;
+    return Layout({
+        title: isSignup ? 'Create your account' : 'Sign in',
+        desc: 'Access your YourTraffic dashboard.',
+        children: body,
+    });
+};
+export const LoginPage = () => AuthPage('login');
+export const SignupPage = () => AuthPage('signup');

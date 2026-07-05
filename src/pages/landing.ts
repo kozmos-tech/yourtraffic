@@ -3,17 +3,15 @@ import { Nav } from '../components/nav.js'
 import { Footer } from '../components/footer.js'
 import { Modals } from '../components/modals.js'
 import { GITHUB } from '../lib/constants.js'
+import { esc } from '../lib/html.js'
 
 const BARS = [34, 52, 41, 63, 48, 72, 58, 80, 66, 91, 74, 60, 83, 97]
 
-export const Landing = () => (
-  <Layout
-    title="YourTraffic. Open-source, privacy-first web analytics"
-    desc="The open-source alternative to Simple Analytics. Unlimited projects, cookie-free tracking, a REST API and native MCP support. Self-host or cloud."
-  >
-    <Nav />
+const snippet = '<script defer src="https://yourtraffic.dev/script.js"></script>'
 
-    {/* HERO */}
+export const Landing = () => {
+  const body = `${Nav()}
+
     <header class="hero">
       <div class="wrap">
         <h1>Simple, privacy-first web analytics.</h1>
@@ -22,14 +20,13 @@ export const Landing = () => (
           a clean API, and native MCP support. Self-host it or run it in the cloud.
         </p>
         <div class="snip">
-          <code>{'<script defer src="https://yourtraffic.dev/script.js"></script>'}</code>
+          <code>${esc(snippet)}</code>
         </div>
         <div class="cta-row">
           <a class="btn btn-primary" href="/signup">Start for free</a>
-          <a class="btn" href={GITHUB}>View on GitHub</a>
+          <a class="btn" href="${GITHUB}">View on GitHub</a>
         </div>
 
-        {/* flat dashboard mock */}
         <div class="panel" aria-hidden="true">
           <div class="panel-top">
             <div class="panel-site"><span class="dot-live"></span> yourtraffic.dev</div>
@@ -41,15 +38,12 @@ export const Landing = () => (
             <div class="stat"><div class="k">Live now</div><div class="v">37</div></div>
           </div>
           <div class="chart">
-            {BARS.map((h) => (
-              <div class="bar" style={`height:${h}%`}></div>
-            ))}
+            ${BARS.map((h) => `<div class="bar" style="height:${h}%"></div>`).join('')}
           </div>
         </div>
       </div>
     </header>
 
-    {/* STRIP */}
     <div class="strip">
       <div class="wrap">
         <span>No cookies</span>
@@ -61,7 +55,6 @@ export const Landing = () => (
       </div>
     </div>
 
-    {/* OPEN SOURCE */}
     <section class="blk" id="open-source">
       <div class="wrap">
         <div class="sec-head">
@@ -70,13 +63,18 @@ export const Landing = () => (
         </div>
         <div class="cta-row">
           <a class="btn btn-primary" href="/signup">Start free in the cloud</a>
-          <a class="btn" href={GITHUB + '#self-hosting'}>Read the self-host guide</a>
+          <a class="btn" href="${GITHUB}#self-hosting">Read the self-host guide</a>
         </div>
       </div>
     </section>
 
-    <Footer />
+    ${Footer()}
 
-    <Modals />
-  </Layout>
-)
+    ${Modals()}`
+
+  return Layout({
+    title: 'YourTraffic. Open-source, privacy-first web analytics',
+    desc: 'The open-source alternative to Simple Analytics. Unlimited projects, cookie-free tracking, a REST API and native MCP support. Self-host or cloud.',
+    children: body,
+  })
+}

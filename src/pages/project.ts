@@ -1,6 +1,7 @@
 import { Layout } from '../components/layout.js'
 import { AppBar } from '../components/appbar.js'
 import { projectClient } from '../lib/project-client.js'
+import { esc } from '../lib/html.js'
 
 type User = { name?: string | null; email: string }
 type Project = { id: string; name: string; domain: string; apiKey: string }
@@ -11,9 +12,8 @@ type Project = { id: string; name: string; domain: string; apiKey: string }
 export const ProjectPage = ({ user, project }: { user: User; project: Project }) => {
   // Escape < so a project name like "</script>" cannot break out of the tag.
   const boot = `window.__PROJECT__=${JSON.stringify(project).replace(/</g, '\\u003c')};`
-  return (
-    <Layout title={`${project.domain}. YourTraffic`} desc={`Analytics for ${project.domain}.`}>
-      <AppBar user={user} />
+
+  const body = `${AppBar({ user })}
 
       <main class="db-wrap">
         <div class="pj-head">
@@ -21,7 +21,7 @@ export const ProjectPage = ({ user, project }: { user: User; project: Project })
             <a class="pj-back" href="/app">All websites</a>
             <div class="db-site">
               <span class="dot-live"></span>
-              {project.domain}
+              ${esc(project.domain)}
             </div>
           </div>
           <div class="pj-head-r">
@@ -37,8 +37,12 @@ export const ProjectPage = ({ user, project }: { user: User; project: Project })
         </div>
       </main>
 
-      <script dangerouslySetInnerHTML={{ __html: boot }} />
-      <script dangerouslySetInnerHTML={{ __html: projectClient }} />
-    </Layout>
-  )
+      <script>${boot}</script>
+      <script>${projectClient}</script>`
+
+  return Layout({
+    title: `${project.domain}. YourTraffic`,
+    desc: `Analytics for ${project.domain}.`,
+    children: body,
+  })
 }

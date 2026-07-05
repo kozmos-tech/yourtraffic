@@ -1,5 +1,3 @@
-import { raw } from 'hono/html'
-
 // Opens/closes any `.modal` via [data-open="id"] / [data-close] / backdrop / Escape.
 const modalScript = `
 (function () {
@@ -21,8 +19,33 @@ const modalScript = `
 })();
 `
 
-const DocsModal = () => (
-  <div class="modal" id="m-docs" role="dialog" aria-modal="true" aria-label="Docs">
+const curlSample =
+  `curl https://api.yourtraffic.dev/v1/stats \\\n` +
+  `  -d site=yourtraffic.dev \\\n` +
+  `  -d period=7d \\\n` +
+  `  -d group=day \\\n` +
+  `  -H "Authorization: Bearer yt_live_…"`
+
+const responseSample =
+  `{\n` +
+  `  "site": "yourtraffic.dev",\n` +
+  `  "period": "7d",\n` +
+  `  "totals": { "visitors": 48213, "pageviews": 126004 },\n` +
+  `  "series": [\n` +
+  `    { "date": "2026-06-29", "visitors": 6120, "pageviews": 15980 },\n` +
+  `    { "date": "2026-06-30", "visitors": 6584, "pageviews": 17240 }\n` +
+  `  ]\n` +
+  `}`
+
+const mcpConfigSample =
+  `{\n` +
+  `  "mcpServers": {\n` +
+  `    "yourtraffic": {\n` +
+  `      "url": "https://yourtraffic.dev/mcp",\n` +
+  `      "headers": { "Authorization": "Bearer yt_live_…" }\n` +
+  `    }\n  }\n}`
+
+const DocsModal = () => `<div class="modal" id="m-docs" role="dialog" aria-modal="true" aria-label="Docs">
     <div class="modal-backdrop" data-close></div>
     <div class="modal-box">
       <button class="modal-x" data-close aria-label="Close">×</button>
@@ -30,13 +53,7 @@ const DocsModal = () => (
       <p>Every metric is available over a small REST API. One endpoint, scoped API keys, JSON out.</p>
       <div class="code">
         <div class="code-top">GET /v1/stats</div>
-        <pre>{raw(
-          `curl https://api.yourtraffic.dev/v1/stats \\\n` +
-            `  -d site=yourtraffic.dev \\\n` +
-            `  -d period=7d \\\n` +
-            `  -d group=day \\\n` +
-            `  -H "Authorization: Bearer yt_live_…"`
-        )}</pre>
+        <pre>${curlSample}</pre>
       </div>
       <h4>Parameters</h4>
       <div class="param">
@@ -47,27 +64,15 @@ const DocsModal = () => (
       </div>
       <h4>Response</h4>
       <div class="code">
-        <pre>{raw(
-          `{\n` +
-            `  "site": "yourtraffic.dev",\n` +
-            `  "period": "7d",\n` +
-            `  "totals": { "visitors": 48213, "pageviews": 126004 },\n` +
-            `  "series": [\n` +
-            `    { "date": "2026-06-29", "visitors": 6120, "pageviews": 15980 },\n` +
-            `    { "date": "2026-06-30", "visitors": 6584, "pageviews": 17240 }\n` +
-            `  ]\n` +
-            `}`
-        )}</pre>
+        <pre>${responseSample}</pre>
       </div>
       <p style="margin-top:16px">
         An <a href="/llms.txt" style="color:var(--fg)">llms.txt</a> is published for AI tools too.
       </p>
     </div>
-  </div>
-)
+  </div>`
 
-const McpModal = () => (
-  <div class="modal" id="m-mcp" role="dialog" aria-modal="true" aria-label="MCP">
+const McpModal = () => `<div class="modal" id="m-mcp" role="dialog" aria-modal="true" aria-label="MCP">
     <div class="modal-backdrop" data-close></div>
     <div class="modal-box">
       <button class="modal-x" data-close aria-label="Close">×</button>
@@ -75,14 +80,7 @@ const McpModal = () => (
       <p>YourTraffic ships a hosted MCP server at <span class="mono">yourtraffic.dev/mcp</span>. Point any MCP client at it and ask about your traffic in plain language.</p>
       <div class="code">
         <div class="code-top">MCP client config</div>
-        <pre>{raw(
-          `{\n` +
-            `  "mcpServers": {\n` +
-            `    "yourtraffic": {\n` +
-            `      "url": "https://yourtraffic.dev/mcp",\n` +
-            `      "headers": { "Authorization": "Bearer yt_live_…" }\n` +
-            `    }\n  }\n}`
-        )}</pre>
+        <pre>${mcpConfigSample}</pre>
       </div>
       <h4>Then just ask</h4>
       <ul>
@@ -91,14 +89,7 @@ const McpModal = () => (
         <li>“Compare this month's referrers to last month.”</li>
       </ul>
     </div>
-  </div>
-)
+  </div>`
 
 // Both marketing modals plus the script that drives them.
-export const Modals = () => (
-  <>
-    <DocsModal />
-    <McpModal />
-    <script dangerouslySetInnerHTML={{ __html: modalScript }} />
-  </>
-)
+export const Modals = () => `${DocsModal()}${McpModal()}<script>${modalScript}</script>`
