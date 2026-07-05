@@ -1,8 +1,8 @@
-import { Layout } from '../components/layout'
-import { Nav } from '../components/nav'
-import { Footer } from '../components/footer'
-import { Modals } from '../components/modals'
-import { GITHUB } from '../lib/constants'
+import { Layout } from '../components/layout.js'
+import { Nav } from '../components/nav.js'
+import { Footer } from '../components/footer.js'
+import { Modals } from '../components/modals.js'
+import { GITHUB } from '../lib/constants.js'
 
 const BARS = [34, 52, 41, 63, 48, 72, 58, 80, 66, 91, 74, 60, 83, 97]
 

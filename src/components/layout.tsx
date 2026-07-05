@@ -1,6 +1,6 @@
 import type { Child } from 'hono/jsx'
-import { style } from '../styles/global'
-import { SITE_URL } from '../lib/constants'
+import { style } from '../styles/global.js'
+import { SITE_URL } from '../lib/constants.js'
 
 export const Layout = ({ title, desc, children }: { title: string; desc: string; children: Child }) => (
   <html lang="en">

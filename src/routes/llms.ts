@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { API_URL, SITE_URL } from '../lib/constants'
+import { API_URL, SITE_URL } from '../lib/constants.js'
 
 // llms.txt placeholder. Real content to be authored later.
 export const llms = new Hono()

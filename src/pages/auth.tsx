@@ -1,5 +1,5 @@
-import { Layout } from '../components/layout'
-import { Logo } from '../components/logo'
+import { Layout } from '../components/layout.js'
+import { Logo } from '../components/logo.js'
 
 type Mode = 'login' | 'signup'
 

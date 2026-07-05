@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { and, desc, eq, gte, sql } from 'drizzle-orm'
-import { db } from '../db'
-import { event, project } from '../db/schema'
-import { auth } from '../lib/auth'
-import { SITE_URL } from '../lib/constants'
+import { db } from '../db/index.js'
+import { event, project } from '../db/schema.js'
+import { auth } from '../lib/auth.js'
+import { SITE_URL } from '../lib/constants.js'
 import {
   clientIp,
   country,
@@ -14,7 +14,7 @@ import {
   parseUA,
   referrerHost,
   visitorHash,
-} from '../lib/track'
+} from '../lib/track.js'
 
 // Public REST API: pageview ingest, stats reads and project management.
 export const api = new Hono()

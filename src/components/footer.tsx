@@ -1,5 +1,5 @@
-import { Logo } from './logo'
-import { GITHUB } from '../lib/constants'
+import { Logo } from './logo.js'
+import { GITHUB } from '../lib/constants.js'
 
 export const Footer = () => (
   <footer>

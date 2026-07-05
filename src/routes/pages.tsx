@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
-import { Landing } from '../pages/landing'
-import { AppPage } from '../pages/app'
-import { LoginPage, SignupPage } from '../pages/auth'
-import { auth } from '../lib/auth'
-import { doc } from '../lib/html'
-import { tracker } from '../lib/tracker'
+import { Landing } from '../pages/landing.js'
+import { AppPage } from '../pages/app.js'
+import { LoginPage, SignupPage } from '../pages/auth.js'
+import { auth } from '../lib/auth.js'
+import { doc } from '../lib/html.js'
+import { tracker } from '../lib/tracker.js'
 
 // HTML pages: marketing site, auth, and the app shell.
 export const pages = new Hono()

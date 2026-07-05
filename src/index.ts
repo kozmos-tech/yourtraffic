@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
-import { pages } from './routes/pages'
-import { api } from './routes/api'
-import { mcp } from './routes/mcp'
-import { llms } from './routes/llms'
-import { auth } from './lib/auth'
+import { pages } from './routes/pages.js'
+import { api } from './routes/api.js'
+import { mcp } from './routes/mcp.js'
+import { llms } from './routes/llms.js'
+import { auth } from './lib/auth.js'
 
 const app = new Hono()
 

@@ -1,6 +1,6 @@
-import { Layout } from '../components/layout'
-import { Logo } from '../components/logo'
-import { GITHUB } from '../lib/constants'
+import { Layout } from '../components/layout.js'
+import { Logo } from '../components/logo.js'
+import { GITHUB } from '../lib/constants.js'
 
 // Signs the user out via better-auth, then returns to the landing page.
 const signOutScript = `
