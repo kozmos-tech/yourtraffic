@@ -1,0 +1,20 @@
+{
+  "name": "yourtraffic",
+  "version": "0.1.0",
+  "description": "Open-source, privacy-first web analytics. Unlimited projects, a first-class API and native MCP support.",
+  "type": "module",
+  "license": "MIT",
+  "repository": "github:kozmos-tech/yourtraffic",
+  "homepage": "https://yourtraffic.dev",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.12.27"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  }
+}
