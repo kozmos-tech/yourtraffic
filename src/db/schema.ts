@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
 
 // Tables required by better-auth (email/password + sessions).
 // Field names match better-auth's core schema so the drizzle adapter maps cleanly.
@@ -58,3 +58,41 @@ export const verification = pgTable('verification', {
   createdAt: timestamp('created_at').$defaultFn(() => new Date()),
   updatedAt: timestamp('updated_at').$defaultFn(() => new Date()),
 })
+
+// A tracked website, owned by a user. The domain maps incoming events to a
+// project; the api key authorizes reads over the REST API and MCP server.
+export const project = pgTable('project', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  domain: text('domain').notNull().unique(),
+  apiKey: text('api_key').notNull().unique(),
+  createdAt: timestamp('created_at')
+    .$defaultFn(() => new Date())
+    .notNull(),
+})
+
+// One row per pageview. No cookies and no personal data: a visitor is a daily
+// rotating hash of ip + user agent + project, so it cannot be traced across days.
+export const event = pgTable(
+  'event',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    timestamp: timestamp('timestamp')
+      .$defaultFn(() => new Date())
+      .notNull(),
+    pathname: text('pathname').notNull(),
+    referrer: text('referrer'),
+    country: text('country'),
+    browser: text('browser'),
+    os: text('os'),
+    device: text('device'),
+    visitorHash: text('visitor_hash').notNull(),
+  },
+  (t) => [index('event_project_time_idx').on(t.projectId, t.timestamp)]
+)

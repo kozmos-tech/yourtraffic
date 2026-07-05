@@ -4,6 +4,7 @@ import { AppPage } from '../pages/app'
 import { LoginPage, SignupPage } from '../pages/auth'
 import { auth } from '../lib/auth'
 import { doc } from '../lib/html'
+import { tracker } from '../lib/tracker'
 
 // HTML pages: marketing site, auth, and the app shell.
 export const pages = new Hono()
@@ -11,6 +12,14 @@ export const pages = new Hono()
 pages.get('/', (c) => c.html(doc(Landing())))
 pages.get('/login', (c) => c.html(doc(LoginPage())))
 pages.get('/signup', (c) => c.html(doc(SignupPage())))
+
+// The tracking script customers embed. Cached hard; it changes rarely.
+pages.get('/script.js', (c) =>
+  c.body(tracker, 200, {
+    'Content-Type': 'application/javascript; charset=utf-8',
+    'Cache-Control': 'public, max-age=86400',
+  })
+)
 
 // The app requires a session. Send signed-out visitors to login.
 pages.get('/app', async (c) => {

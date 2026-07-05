@@ -8,6 +8,13 @@
       "when": 1783248352825,
       "tag": "0000_nasty_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783249343574,
+      "tag": "0001_minor_blazing_skull",
+      "breakpoints": true
     }
   ]
 }
