@@ -84,22 +84,23 @@ const BREAKDOWNS: Record<string, string> = {
   device: 'device',
 }
 
-api.use('/v1/stats', cors({ origin: '*', allowMethods: ['GET', 'OPTIONS'] }))
+type StatsResult =
+  | { ok: true; body: Record<string, unknown> }
+  | { ok: false; status: 400; error: string }
 
-// Read stats for one project. Authorized with a Bearer api key, matching the docs.
-api.get('/v1/stats', async (c) => {
-  const key = (c.req.header('authorization') || '').replace(/^Bearer\s+/i, '').trim()
-  if (!key) return c.json({ error: 'Missing api key.' }, 401)
-
-  const proj = await db.query.project.findFirst({ where: eq(project.apiKey, key) })
-  if (!proj) return c.json({ error: 'Invalid api key.' }, 401)
-
-  const period = c.req.query('period') ?? '7d'
+// Shared stats query, used by both the public api-key endpoint and the
+// session-authed dashboard endpoint. All validation errors are 400s.
+async function computeStats(
+  proj: { id: string; domain: string },
+  period: string,
+  group: string | undefined,
+  by: string | undefined
+): Promise<StatsResult> {
   const days = PERIOD_DAYS[period]
-  if (!days) return c.json({ error: 'Unknown period.' }, 400)
+  if (!days) return { ok: false, status: 400, error: 'Unknown period.' }
 
-  const group = c.req.query('group') ?? (days > 90 ? 'month' : 'day')
-  if (!GROUPS.has(group)) return c.json({ error: 'Unknown group.' }, 400)
+  const grp = group ?? (days > 90 ? 'month' : 'day')
+  if (!GROUPS.has(grp)) return { ok: false, status: 400, error: 'Unknown group.' }
 
   const since = new Date(Date.now() - days * 86400000)
   const scope = and(eq(event.projectId, proj.id), gte(event.timestamp, since))
@@ -112,10 +113,10 @@ api.get('/v1/stats', async (c) => {
     .from(event)
     .where(scope)) as { visitors: number; pageviews: number }[]
 
-  // `group` is whitelisted above, so it is safe to inline. It must be a literal
+  // `grp` is whitelisted above, so it is safe to inline. It must be a literal
   // (not a bind param) or Postgres treats the select and group-by expressions as
   // different and rejects the query.
-  const bucket = sql`to_char(date_trunc(${sql.raw(`'${group}'`)}, ${event.timestamp}), 'YYYY-MM-DD')`
+  const bucket = sql`to_char(date_trunc(${sql.raw(`'${grp}'`)}, ${event.timestamp}), 'YYYY-MM-DD')`
   const series = (await db
     .select({
       date: bucket as unknown as any,
@@ -134,10 +135,9 @@ api.get('/v1/stats', async (c) => {
     series,
   }
 
-  const by = c.req.query('by')
   if (by) {
     const col = BREAKDOWNS[by]
-    if (!col) return c.json({ error: 'Unknown by.' }, 400)
+    if (!col) return { ok: false, status: 400, error: 'Unknown by.' }
     const dim = sql.raw(`"${col}"`)
     body.by = by
     body.breakdown = (await db
@@ -153,7 +153,27 @@ api.get('/v1/stats', async (c) => {
       .limit(20)) as { name: string; visitors: number; pageviews: number }[]
   }
 
-  return c.json(body)
+  return { ok: true, body }
+}
+
+api.use('/v1/stats', cors({ origin: '*', allowMethods: ['GET', 'OPTIONS'] }))
+
+// Read stats for one project. Authorized with a Bearer api key, matching the docs.
+api.get('/v1/stats', async (c) => {
+  const key = (c.req.header('authorization') || '').replace(/^Bearer\s+/i, '').trim()
+  if (!key) return c.json({ error: 'Missing api key.' }, 401)
+
+  const proj = await db.query.project.findFirst({ where: eq(project.apiKey, key) })
+  if (!proj) return c.json({ error: 'Invalid api key.' }, 401)
+
+  const result = await computeStats(
+    proj,
+    c.req.query('period') ?? '7d',
+    c.req.query('group'),
+    c.req.query('by')
+  )
+  if (!result.ok) return c.json({ error: result.error }, result.status)
+  return c.json(result.body)
 })
 
 /* -------------------------------------------------------------- projects --- */
@@ -203,4 +223,41 @@ api.post('/projects', async (c) => {
     },
     201
   )
+})
+
+// Find a project by id, but only if the signed-in user owns it.
+async function ownedProject(headers: Headers, id: string) {
+  const u = await currentUser(headers)
+  if (!u) return { user: null, proj: null }
+  const proj = await db.query.project.findFirst({
+    where: and(eq(project.id, id), eq(project.userId, u.id)),
+  })
+  return { user: u, proj: proj ?? null }
+}
+
+// Dashboard stats for one of the user's own projects. Session-authed, so the
+// browser never needs to hold an api key.
+api.get('/projects/:id/stats', async (c) => {
+  const { user, proj } = await ownedProject(c.req.raw.headers, c.req.param('id'))
+  if (!user) return c.json({ error: 'Not signed in.' }, 401)
+  if (!proj) return c.json({ error: 'Project not found.' }, 404)
+
+  const result = await computeStats(
+    proj,
+    c.req.query('period') ?? '7d',
+    c.req.query('group'),
+    c.req.query('by')
+  )
+  if (!result.ok) return c.json({ error: result.error }, result.status)
+  return c.json(result.body)
+})
+
+api.delete('/projects/:id', async (c) => {
+  const { user, proj } = await ownedProject(c.req.raw.headers, c.req.param('id'))
+  if (!user) return c.json({ error: 'Not signed in.' }, 401)
+  if (!proj) return c.json({ error: 'Project not found.' }, 404)
+
+  // Events cascade on the project foreign key, so this clears their stats too.
+  await db.delete(project).where(eq(project.id, proj.id))
+  return c.json({ ok: true })
 })
