@@ -39,6 +39,7 @@ export const Layout = ({
       <meta property="og:site_name" content="YourTraffic" />
       <meta name="twitter:card" content="summary_large_image" />
       <link rel="icon" href="${favicon}" />
+      <script defer src="https://yourtraffic.dev/script.js"></script>
       ${head}
       <style>${style}</style>
     </head>
