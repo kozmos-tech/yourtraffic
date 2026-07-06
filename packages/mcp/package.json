@@ -1,7 +1,7 @@
 {
   "name": "@kozmos-tech/yourtraffic",
-  "version": "0.1.0",
-  "description": "MCP bridge for YourTraffic — privacy-first web analytics your AI tools can query. Connects any stdio MCP client to the hosted YourTraffic server.",
+  "version": "0.1.1",
+  "description": "Open-source, privacy-first web analytics for tracking your sites' traffic.",
   "mcpName": "io.github.kozmos-tech/yourtraffic",
   "license": "MIT",
   "type": "module",

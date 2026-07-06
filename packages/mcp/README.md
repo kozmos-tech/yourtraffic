@@ -1,6 +1,6 @@
 # @kozmos-tech/yourtraffic
 
-MCP bridge for [YourTraffic](https://yourtraffic.dev) — privacy-first web analytics your AI tools can query.
+Open-source, privacy-first web analytics for tracking your sites' traffic.
 
 YourTraffic's MCP server is hosted and remote. This package is a tiny launcher that
 bridges any stdio MCP client to the hosted endpoint, so clients that only speak

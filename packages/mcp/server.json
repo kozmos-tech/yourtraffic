@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.kozmos-tech/yourtraffic",
-  "description": "MCP bridge for YourTraffic — privacy-first web analytics your AI tools can query.",
+  "description": "Open-source, privacy-first web analytics for tracking your sites' traffic.",
   "repository": {
     "url": "https://github.com/kozmos-tech/yourtraffic",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@kozmos-tech/yourtraffic",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "transport": {
         "type": "stdio"
       }
