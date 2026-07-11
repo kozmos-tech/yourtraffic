@@ -44,21 +44,30 @@ export async function computeStats(
     .from(event)
     .where(scope)) as { visitors: number; pageviews: number; avgDuration: number }[]
 
-  // `grp` is whitelisted above, so it is safe to inline. It must be a literal
-  // (not a bind param) or Postgres treats the select and group-by expressions as
-  // different and rejects the query.
   const fmt = grp === 'hour' ? 'YYYY-MM-DD HH24:00' : 'YYYY-MM-DD'
-  const bucket = sql`to_char(date_trunc(${sql.raw(`'${grp}'`)}, ${event.timestamp}), ${sql.raw(`'${fmt}'`)})`
-  const series = (await db
-    .select({
-      date: bucket as unknown as any,
-      visitors: sql<number>`count(distinct ${event.visitorHash})::int`,
-      pageviews: sql<number>`count(*)::int`,
-    })
-    .from(event)
-    .where(scope)
-    .groupBy(sql`1`)
-    .orderBy(sql`1`)) as { date: string; visitors: number; pageviews: number }[]
+  const spans: Record<string, number> = {
+    hour: days * 24,
+    day: days,
+    week: Math.max(1, Math.ceil(days / 7)),
+    month: Math.max(1, Math.round(days / 30)),
+  }
+  const n = spans[grp]
+  const g = sql.raw(`'${grp}'`)
+  const series = (await db.execute(sql`
+    select
+      to_char(b.bucket, ${sql.raw(`'${fmt}'`)}) as date,
+      count(distinct e.visitor_hash)::int as visitors,
+      count(e.id)::int as pageviews
+    from generate_series(
+      date_trunc(${g}, now()) - ${sql.raw(`interval '${n - 1} ${grp}'`)},
+      date_trunc(${g}, now()),
+      ${sql.raw(`interval '1 ${grp}'`)}
+    ) as b(bucket)
+    left join "event" e on e.project_id = ${proj.id}
+      and date_trunc(${g}, e.timestamp) = b.bucket
+    group by b.bucket
+    order by b.bucket
+  `)) as unknown as { date: string; visitors: number; pageviews: number }[]
 
   const body: Record<string, unknown> = {
     site: proj.domain,

@@ -22,7 +22,6 @@ export const ProjectPage = ({ user, project }: { user: User; project: Project })
             <div class="db-site">
               <span class="dot-live"></span>
               ${esc(project.domain)}
-              <span id="pj-live" class="pj-live"></span>
             </div>
           </div>
           <div class="pj-head-r">

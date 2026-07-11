@@ -23,7 +23,7 @@ export const projectClient = /* js */ `(function () {
     { by: 'device', label: 'Devices' },
   ];
 
-  var state = { period: '7d', metric: 'visitors', stats: null, loading: true };
+  var state = { period: '7d', metric: 'visitors', stats: null, loading: true, live: 0 };
   var BY_KEYS = TABS.map(function (t) { return t.by; }).join(',');
 
   /* -------------------------------------------------------------- helpers -- */
@@ -184,8 +184,12 @@ export const projectClient = /* js */ `(function () {
       ]);
     });
     cards.push(el('div', { class: 'db-card db-card-static' }, [
-      el('div', { class: 'k' }, 'Avg. time on page'),
+      el('div', { class: 'k' }, 'Avg. time'),
       el('div', { class: 'v' }, dur(totals && totals.avgDuration)),
+    ]));
+    cards.push(el('div', { class: 'db-card db-card-static' }, [
+      el('div', { class: 'k' }, 'Online now'),
+      el('div', { class: 'v', id: 'pj-live-v' }, num(state.live)),
     ]));
     return el('div', { class: 'db-cards' }, cards);
   }
@@ -335,11 +339,11 @@ export const projectClient = /* js */ `(function () {
   var settingsBtn = document.getElementById('pj-settings');
   if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
 
-  var liveEl = document.getElementById('pj-live');
   function loadLive() {
-    if (!liveEl) return;
     api('/api/projects/' + proj.id + '/live').then(function (r) {
-      liveEl.textContent = (r.live || 0) + ' online';
+      state.live = r.live || 0;
+      var v = document.getElementById('pj-live-v');
+      if (v) v.textContent = num(state.live);
     }).catch(function () {});
   }
 

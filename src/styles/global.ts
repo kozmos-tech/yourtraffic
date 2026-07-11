@@ -229,22 +229,20 @@ footer { padding: 44px 0; }
 .pj-back::before { content: "\\2190"; margin-right: 6px; }
 .pj-head-r { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .db-site { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
-.pj-live { font-size: 12px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
-.pj-live:empty { display: none; }
 .db-period { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
 .db-period button { font-size: 13px; padding: 6px 12px; border: 0; border-right: 1px solid var(--line); background: #fff; color: var(--muted); cursor: pointer; }
 .db-period button:last-child { border-right: 0; }
 .db-period button.on { background: #f5f5f5; color: var(--fg); font-weight: 500; }
 
 /* metric cards */
-.db-cards { display: flex; gap: 32px; }
-.db-card { padding: 2px 0 9px; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; text-align: left; }
+.db-cards { display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: flex-start; }
+.db-card { font-family: inherit; padding: 2px 0 9px; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; text-align: left; }
 .db-card:hover .k { color: var(--fg); }
 .db-card.on { border-bottom-color: var(--accent); }
 .db-card.on .k { color: var(--fg); }
 .db-card.db-card-static { cursor: default; }
-.db-card .k { font-size: 12px; color: var(--muted); }
-.db-card .v { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.db-card .k { font-size: 12px; line-height: 1.4; color: var(--muted); white-space: nowrap; }
+.db-card .v { font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; margin-top: 3px; font-variant-numeric: tabular-nums; }
 
 /* chart */
 .db-chart { position: relative; margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 20px 16px 14px; }
