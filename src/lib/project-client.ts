@@ -45,6 +45,12 @@ export const projectClient = /* js */ `(function () {
 
   function num(n) { return (n || 0).toLocaleString(); }
   function pct(n, total) { return total > 0 ? Math.round((n / total) * 100) + '%' : '0%'; }
+  function dur(sec) {
+    sec = Math.round(sec || 0);
+    if (sec <= 0) return '0s';
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m > 0 ? m + 'm ' + s + 's' : s + 's';
+  }
 
   function api(path) {
     return fetch(path, { headers: { 'Content-Type': 'application/json' } }).then(function (r) {
@@ -167,7 +173,7 @@ export const projectClient = /* js */ `(function () {
 
   function metricCards(totals) {
     var defs = [['visitors', 'Visitors'], ['pageviews', 'Pageviews']];
-    return el('div', { class: 'db-cards' }, defs.map(function (m) {
+    var cards = defs.map(function (m) {
       return el('button', {
         type: 'button',
         class: 'db-card' + (state.metric === m[0] ? ' on' : ''),
@@ -176,7 +182,12 @@ export const projectClient = /* js */ `(function () {
         el('div', { class: 'k' }, m[1]),
         el('div', { class: 'v' }, num(totals && totals[m[0]])),
       ]);
-    }));
+    });
+    cards.push(el('div', { class: 'db-card db-card-static' }, [
+      el('div', { class: 'k' }, 'Avg. time on page'),
+      el('div', { class: 'v' }, dur(totals && totals.avgDuration)),
+    ]));
+    return el('div', { class: 'db-cards' }, cards);
   }
 
   // Buckets come back as 'YYYY-MM-DD' or, for the 24h view, 'YYYY-MM-DD HH:00'.
@@ -197,19 +208,29 @@ export const projectClient = /* js */ `(function () {
     var max = 1;
     series.forEach(function (d) { if ((d[metric] || 0) > max) max = d[metric]; });
     box.appendChild(el('div', { class: 'db-ymax' }, num(max)));
-    var bars = el('div', { class: 'db-bars' });
+
+    var w = 100, h = 100, n = series.length;
+    function X(i) { return n < 2 ? 0 : (i / (n - 1)) * w; }
+    function Y(v) { return h - (v / max) * (h - 4) - 2; }
+    var pts = series.map(function (d, i) { return X(i).toFixed(2) + ',' + Y(d[metric] || 0).toFixed(2); });
+    var line = 'M' + pts.join(' L');
+    var area = 'M0,' + h + ' L' + pts.join(' L') + ' L' + w + ',' + h + ' Z';
+
+    var plot = el('div', { class: 'db-plot' });
+    plot.innerHTML =
+      '<svg class="db-line" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path class="db-line-fill" d="' + area + '" />' +
+      '<path class="db-line-stroke" d="' + line + '" />' +
+      '</svg>';
+
+    var hits = el('div', { class: 'db-hits' });
     series.forEach(function (d) {
       var v = d[metric] || 0;
-      var col = el('div', {
-        class: 'db-bcol',
-        title: d.date + ', ' + num(v) + ' ' + metric,
-      });
-      var b = el('div', { class: 'db-b' + (v === 0 ? ' empty' : '') });
-      b.style.height = (v === 0 ? 2 : Math.max(3, Math.round((v / max) * 100))) + '%';
-      col.appendChild(b);
-      bars.appendChild(col);
+      hits.appendChild(el('div', { class: 'db-hit', title: d.date + ', ' + num(v) + ' ' + metric }));
     });
-    box.appendChild(bars);
+    plot.appendChild(hits);
+    box.appendChild(plot);
+
     box.appendChild(el('div', { class: 'db-xaxis' }, [
       el('span', null, tickLabel(series[0].date)),
       el('span', null, tickLabel(series[series.length - 1].date)),
@@ -314,8 +335,18 @@ export const projectClient = /* js */ `(function () {
   var settingsBtn = document.getElementById('pj-settings');
   if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
 
+  var liveEl = document.getElementById('pj-live');
+  function loadLive() {
+    if (!liveEl) return;
+    api('/api/projects/' + proj.id + '/live').then(function (r) {
+      liveEl.textContent = (r.live || 0) + ' online';
+    }).catch(function () {});
+  }
+
   renderPeriod();
   renderBody();
   loadStats();
+  loadLive();
+  setInterval(loadLive, 15000);
 })();
 `

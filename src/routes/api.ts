@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, gte, isNull, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { event, project } from '../db/schema.js'
 import { auth } from '../lib/auth.js'
@@ -34,10 +34,15 @@ api.use('/event', cors({ origin: '*', allowMethods: ['POST', 'OPTIONS'] }))
 // bloat a row. pathname is capped generously, hostnames at their real max.
 const MAX_BODY = 2048
 const MAX_PATH = 512
+const MAX_DURATION = 1800
 
 function clip(s: string, max: number): string {
   return s.length > max ? s.slice(0, max) : s
 }
+
+// Client-supplied pageview id, used to attach a time-on-page reading to its
+// pageview later. Must look like our own ids before we trust it.
+const ID_RE = /^[0-9a-fA-F-]{8,64}$/
 
 // Record a pageview. Always answers 202 so a misconfigured or unknown site never
 // surfaces an error in a visitor's console. The body is sent as text/plain by
@@ -46,12 +51,26 @@ api.post('/event', async (c) => {
   const raw = await c.req.text()
   if (!raw || raw.length > MAX_BODY) return c.body(null, 202)
 
-  let data: { u?: string; r?: string | null }
+  let data: { n?: string; u?: string; r?: string | null; i?: string; s?: number }
   try {
     data = JSON.parse(raw)
   } catch {
     return c.body(null, 202)
   }
+
+  // A leave beacon: record how long the visitor stayed on the page it names.
+  if (data.n === 'time') {
+    const id = typeof data.i === 'string' && ID_RE.test(data.i) ? data.i : null
+    const s = typeof data.s === 'number' && data.s > 0 ? Math.min(Math.round(data.s), MAX_DURATION) : 0
+    if (id && s) {
+      await db
+        .update(event)
+        .set({ duration: s })
+        .where(and(eq(event.id, id), isNull(event.duration)))
+    }
+    return c.body(null, 202)
+  }
+
   if (!data.u || typeof data.u !== 'string') return c.body(null, 202)
 
   let url: URL
@@ -72,17 +91,21 @@ api.post('/event', async (c) => {
   const ua = c.req.header('user-agent') || ''
   const { browser, os, device } = parseUA(ua)
 
-  await db.insert(event).values({
-    id: newId(),
-    projectId: proj.id,
-    pathname: clip(url.pathname || '/', MAX_PATH),
-    referrer: referrerHost(ref, domain),
-    country: country(c.req.raw.headers),
-    browser,
-    os,
-    device,
-    visitorHash: await visitorHash(proj.id, clientIp(c.req.raw.headers), ua),
-  })
+  const id = typeof data.i === 'string' && ID_RE.test(data.i) ? data.i : newId()
+  await db
+    .insert(event)
+    .values({
+      id,
+      projectId: proj.id,
+      pathname: clip(url.pathname || '/', MAX_PATH),
+      referrer: referrerHost(ref, domain),
+      country: country(c.req.raw.headers),
+      browser,
+      os,
+      device,
+      visitorHash: await visitorHash(proj.id, clientIp(c.req.raw.headers), ua),
+    })
+    .onConflictDoNothing()
 
   return c.body(null, 202)
 })
@@ -183,6 +206,22 @@ api.get('/projects/:id/stats', async (c) => {
   )
   if (!result.ok) return c.json({ error: result.error }, result.status)
   return c.json(result.body)
+})
+
+// Visitors active in the last five minutes, polled by the dashboard for a live
+// count. Cheap enough to hit on a short interval.
+api.get('/projects/:id/live', async (c) => {
+  const { user, proj } = await ownedProject(c.req.raw.headers, c.req.param('id'))
+  if (!user) return c.json({ error: 'Not signed in.' }, 401)
+  if (!proj) return c.json({ error: 'Project not found.' }, 404)
+
+  const since = new Date(Date.now() - 5 * 60000)
+  const [row] = (await db
+    .select({ live: sql<number>`count(distinct ${event.visitorHash})::int` })
+    .from(event)
+    .where(and(eq(event.projectId, proj.id), gte(event.timestamp, since)))) as { live: number }[]
+
+  return c.json({ live: row?.live ?? 0 })
 })
 
 api.delete('/projects/:id', async (c) => {

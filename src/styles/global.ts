@@ -229,6 +229,8 @@ footer { padding: 44px 0; }
 .pj-back::before { content: "\\2190"; margin-right: 6px; }
 .pj-head-r { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .db-site { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.pj-live { font-size: 12px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+.pj-live:empty { display: none; }
 .db-period { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
 .db-period button { font-size: 13px; padding: 6px 12px; border: 0; border-right: 1px solid var(--line); background: #fff; color: var(--muted); cursor: pointer; }
 .db-period button:last-child { border-right: 0; }
@@ -240,17 +242,19 @@ footer { padding: 44px 0; }
 .db-card:hover .k { color: var(--fg); }
 .db-card.on { border-bottom-color: var(--accent); }
 .db-card.on .k { color: var(--fg); }
+.db-card.db-card-static { cursor: default; }
 .db-card .k { font-size: 12px; color: var(--muted); }
 .db-card .v { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; margin-top: 3px; font-variant-numeric: tabular-nums; }
 
 /* chart */
 .db-chart { position: relative; margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 20px 16px 14px; }
 .db-ymax { position: absolute; top: 10px; right: 14px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.db-bars { display: flex; align-items: flex-end; gap: 4px; height: 180px; }
-.db-bcol { flex: 1 1 0; max-width: 44px; display: flex; align-items: flex-end; height: 100%; }
-.db-b { width: 100%; min-width: 3px; background: var(--accent); opacity: 0.82; border-radius: 2px 2px 0 0; min-height: 2px; }
-.db-bcol:hover .db-b { opacity: 1; }
-.db-b.empty { background: var(--line); opacity: 1; }
+.db-plot { position: relative; height: 180px; }
+.db-line { display: block; width: 100%; height: 100%; overflow: visible; }
+.db-line-stroke { fill: none; stroke: var(--accent); stroke-width: 1.75; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+.db-line-fill { fill: var(--accent); opacity: 0.08; }
+.db-hits { position: absolute; inset: 0; display: flex; }
+.db-hit { flex: 1 1 0; }
 .db-xaxis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 10px; }
 
 /* breakdown cards, two per row */

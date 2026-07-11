@@ -39,9 +39,10 @@ export async function computeStats(
     .select({
       visitors: sql<number>`count(distinct ${event.visitorHash})::int`,
       pageviews: sql<number>`count(*)::int`,
+      avgDuration: sql<number>`coalesce(round(avg(${event.duration})), 0)::int`,
     })
     .from(event)
-    .where(scope)) as { visitors: number; pageviews: number }[]
+    .where(scope)) as { visitors: number; pageviews: number; avgDuration: number }[]
 
   // `grp` is whitelisted above, so it is safe to inline. It must be a literal
   // (not a bind param) or Postgres treats the select and group-by expressions as
@@ -62,7 +63,7 @@ export async function computeStats(
   const body: Record<string, unknown> = {
     site: proj.domain,
     period,
-    totals: totals ?? { visitors: 0, pageviews: 0 },
+    totals: totals ?? { visitors: 0, pageviews: 0, avgDuration: 0 },
     series,
   }
 

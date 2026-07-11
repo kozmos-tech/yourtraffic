@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, boolean, integer, index } from 'drizzle-orm/pg-core'
 
 // Tables required by better-auth (email/password + sessions).
 // Field names match better-auth's core schema so the drizzle adapter maps cleanly.
@@ -146,6 +146,7 @@ export const event = pgTable(
     browser: text('browser'),
     os: text('os'),
     device: text('device'),
+    duration: integer('duration'),
     visitorHash: text('visitor_hash').notNull(),
   },
   (t) => [index('event_project_time_idx').on(t.projectId, t.timestamp)]
