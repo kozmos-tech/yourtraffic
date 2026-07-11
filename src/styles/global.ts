@@ -214,7 +214,9 @@ footer { padding: 44px 0; }
 .pj-card-top { display: flex; align-items: center; gap: 8px; }
 .pj-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
 .pj-domain { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.pj-stat { margin-top: 16px; display: flex; align-items: baseline; gap: 7px; }
+.pj-spark { margin-top: 14px; display: flex; align-items: flex-end; gap: 3px; height: 34px; }
+.pj-spark-b { flex: 1; background: var(--accent); border-radius: 2px; opacity: 0.85; min-height: 2px; }
+.pj-stat { margin-top: 14px; display: flex; align-items: baseline; gap: 7px; }
 .pj-stat-v { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .pj-stat-k { font-size: 12px; color: var(--muted); }
 

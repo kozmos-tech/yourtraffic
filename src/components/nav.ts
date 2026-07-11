@@ -1,6 +1,6 @@
 import { Logo } from './logo.js'
 
-export const Nav = () => `<nav class="nav">
+export const Nav = ({ loggedIn = false }: { loggedIn?: boolean } = {}) => `<nav class="nav">
     <div class="wrap nav-inner">
       <a class="brand" href="/">
         ${Logo()}
@@ -10,8 +10,10 @@ export const Nav = () => `<nav class="nav">
         <a class="n" href="#" data-open="m-docs">Docs</a>
         <a class="n" href="#" data-open="m-mcp">MCP</a>
         <a class="n" href="/llms.txt">llms.txt</a>
-        <a class="n" href="/login">Sign in</a>
-        <a class="btn btn-primary btn-sm" href="/signup">Get started</a>
+        ${loggedIn
+          ? `<a class="btn btn-primary btn-sm" href="/app">Dashboard</a>`
+          : `<a class="n" href="/login">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="/signup">Get started</a>`}
       </div>
     </div>
   </nav>`

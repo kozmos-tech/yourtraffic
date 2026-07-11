@@ -16,7 +16,10 @@ import { tracker } from '../lib/tracker.js'
 // HTML pages: marketing site, auth, and the app shell.
 export const pages = new Hono()
 
-pages.get('/', (c) => c.html(doc(Landing())))
+pages.get('/', async (c) => {
+  const session = await auth.api.getSession({ headers: c.req.raw.headers })
+  return c.html(doc(Landing({ loggedIn: !!session })))
+})
 
 pages.get('/blog', (c) => c.html(doc(BlogIndex())))
 pages.get('/blog/:slug', (c) => {
@@ -72,17 +75,38 @@ pages.get('/app', async (c) => {
   })
 
   const counts = new Map<string, number>()
+  const seriesMap = new Map<string, Map<string, number>>()
+  const days: string[] = []
+  for (let i = 6; i >= 0; i--) {
+    days.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10))
+  }
   if (rows.length) {
     const since = new Date(Date.now() - 7 * 86400000)
+    const ids = rows.map((r) => r.id)
     const agg = await db
       .select({
         projectId: event.projectId,
         visitors: sql<number>`count(distinct ${event.visitorHash})::int`,
       })
       .from(event)
-      .where(and(inArray(event.projectId, rows.map((r) => r.id)), gte(event.timestamp, since)))
+      .where(and(inArray(event.projectId, ids), gte(event.timestamp, since)))
       .groupBy(event.projectId)
     for (const a of agg) counts.set(a.projectId, a.visitors)
+
+    const daily = (await db
+      .select({
+        projectId: event.projectId,
+        date: sql<string>`to_char(${event.timestamp}, 'YYYY-MM-DD')`,
+        visitors: sql<number>`count(distinct ${event.visitorHash})::int`,
+      })
+      .from(event)
+      .where(and(inArray(event.projectId, ids), gte(event.timestamp, since)))
+      .groupBy(event.projectId, sql`2`)) as { projectId: string; date: string; visitors: number }[]
+    for (const d of daily) {
+      let m = seriesMap.get(d.projectId)
+      if (!m) { m = new Map(); seriesMap.set(d.projectId, m) }
+      m.set(d.date, d.visitors)
+    }
   }
 
   const projects = rows.map((r) => ({
@@ -90,6 +114,7 @@ pages.get('/app', async (c) => {
     name: r.name,
     domain: r.domain,
     visitors: counts.get(r.id) ?? 0,
+    series: days.map((date) => (seriesMap.get(r.id)?.get(date) ?? 0)),
   }))
 
   return c.html(doc(AppPage({ user: session.user, projects })))

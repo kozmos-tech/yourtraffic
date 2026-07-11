@@ -12,8 +12,11 @@ const snippet = '<script defer src="https://yourtraffic.dev/script.js"></script>
 
 const useCases = posts.filter((p) => p.useCase)
 
-export const Landing = () => {
-  const body = `${Nav()}
+export const Landing = ({ loggedIn = false }: { loggedIn?: boolean } = {}) => {
+  const primaryCta = loggedIn
+    ? `<a class="btn btn-primary" href="/app">Dashboard</a>`
+    : `<a class="btn btn-primary" href="/signup">Start for free</a>`
+  const body = `${Nav({ loggedIn })}
 
     <header class="hero">
       <div class="wrap">
@@ -26,7 +29,7 @@ export const Landing = () => {
           <code>${esc(snippet)}</code>
         </div>
         <div class="cta-row">
-          <a class="btn btn-primary" href="/signup">Start for free</a>
+          ${primaryCta}
           <a class="btn" href="${GITHUB}">View on GitHub</a>
         </div>
 
@@ -84,7 +87,9 @@ export const Landing = () => {
           <p>Self-host YourTraffic for free under the MIT license, or let us run it for you. Same product, unlimited projects, no dark patterns.</p>
         </div>
         <div class="cta-row">
-          <a class="btn btn-primary" href="/signup">Start free in the cloud</a>
+          ${loggedIn
+            ? `<a class="btn btn-primary" href="/app">Dashboard</a>`
+            : `<a class="btn btn-primary" href="/signup">Start free in the cloud</a>`}
           <a class="btn" href="${GITHUB}#self-hosting">Read the self-host guide</a>
         </div>
       </div>

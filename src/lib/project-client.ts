@@ -253,7 +253,9 @@ export const projectClient = /* js */ `(function () {
       var total = 0;
       rows.forEach(function (r) { total += r.visitors || 0; });
       if (total < 1) total = 1;
-      rows.slice(0, 7).forEach(function (r) {
+      rows.slice().sort(function (a, b) {
+        return (b.visitors || 0) - (a.visitors || 0);
+      }).slice(0, 7).forEach(function (r) {
         var bar = el('div', { class: 'db-rowbar' });
         bar.style.width = Math.round(((r.visitors || 0) / total) * 100) + '%';
         body.appendChild(el('div', { class: 'db-row' }, [
