@@ -22,7 +22,7 @@ const TOOLS = [
   {
     name: 'get_stats',
     description:
-      'Get visitor and pageview stats for one of your websites, with optional breakdowns by page, referrer, country, browser or device.',
+      'Get visitor and pageview stats for one of your websites, with optional breakdowns by page, referrer, country, browser, device or event.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -38,7 +38,7 @@ const TOOLS = [
         by: {
           type: 'string',
           description:
-            'Optional breakdown dimension, or a comma list of them. One or more of page, referrer, country, browser, device.',
+            'Optional breakdown dimension, or a comma list of them. One or more of page, referrer, country, browser, device, event.',
         },
       },
       required: ['site'],

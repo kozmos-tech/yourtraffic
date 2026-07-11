@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { and, eq, gte, isNull, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { event, project } from '../db/schema.js'
+import { customEvent, event, project } from '../db/schema.js'
 import { auth } from '../lib/auth.js'
 import { SITE_URL } from '../lib/constants.js'
 import { computeStats } from '../lib/stats.js'
@@ -35,6 +35,7 @@ api.use('/event', cors({ origin: '*', allowMethods: ['POST', 'OPTIONS'] }))
 const MAX_BODY = 2048
 const MAX_PATH = 512
 const MAX_DURATION = 1800
+const MAX_NAME = 64
 
 function clip(s: string, max: number): string {
   return s.length > max ? s.slice(0, max) : s
@@ -51,7 +52,7 @@ api.post('/event', async (c) => {
   const raw = await c.req.text()
   if (!raw || raw.length > MAX_BODY) return c.body(null, 202)
 
-  let data: { n?: string; u?: string; r?: string | null; i?: string; s?: number }
+  let data: { n?: string; u?: string; r?: string | null; i?: string; s?: number; e?: string }
   try {
     data = JSON.parse(raw)
   } catch {
@@ -68,6 +69,30 @@ api.post('/event', async (c) => {
         .set({ duration: s })
         .where(and(eq(event.id, id), isNull(event.duration)))
     }
+    return c.body(null, 202)
+  }
+
+  if (data.n === 'event') {
+    const name = typeof data.e === 'string' ? clip(data.e.trim(), MAX_NAME) : ''
+    if (!name || !data.u || typeof data.u !== 'string') return c.body(null, 202)
+    let evUrl: URL
+    try {
+      evUrl = new URL(data.u)
+    } catch {
+      return c.body(null, 202)
+    }
+    if (evUrl.protocol !== 'http:' && evUrl.protocol !== 'https:') return c.body(null, 202)
+    const evDomain = normalizeDomain(evUrl.hostname)
+    const evProj = await db.query.project.findFirst({ where: eq(project.domain, evDomain) })
+    if (!evProj) return c.body(null, 202)
+    const evUa = c.req.header('user-agent') || ''
+    await db.insert(customEvent).values({
+      id: newId(),
+      projectId: evProj.id,
+      name,
+      pathname: clip(evUrl.pathname || '/', MAX_PATH),
+      visitorHash: await visitorHash(evProj.id, clientIp(c.req.raw.headers), evUa),
+    })
     return c.body(null, 202)
   }
 

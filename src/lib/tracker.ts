@@ -43,6 +43,11 @@ export const tracker = /* js */ `(function () {
   }
   addEventListener('visibilitychange', function () { if (doc.visibilityState === 'hidden') leave(); });
   addEventListener('pagehide', leave);
+  function track(name) {
+    if (local() || typeof name !== 'string' || !name) return;
+    post(JSON.stringify({ n: 'event', e: name, u: loc.href }));
+  }
+  try { window.yt = track; } catch (e) {}
   page();
 })();
 `

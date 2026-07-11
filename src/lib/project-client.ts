@@ -21,6 +21,7 @@ export const projectClient = /* js */ `(function () {
     { by: 'country', label: 'Countries' },
     { by: 'browser', label: 'Browsers' },
     { by: 'device', label: 'Devices' },
+    { by: 'event', label: 'Events' },
   ];
 
   var state = { period: '7d', metric: 'visitors', stats: null, loading: true, live: 0 };
@@ -129,6 +130,10 @@ export const projectClient = /* js */ `(function () {
       el('p', null, 'Connect an agent to this endpoint. It uses OAuth, so you sign in to approve access. No api key needed.'),
       codeBlock('MCP endpoint', location.origin + '/mcp'),
       copyBtn(location.origin + '/mcp'),
+      el('h4', null, 'Custom events'),
+      el('p', null, 'Call this from your own click or submit handlers to count an action. The name is up to you.'),
+      codeBlock('JavaScript', "window.yt('Signup')"),
+      copyBtn("window.yt('Signup')"),
       el('h4', { class: 'db-danger-h' }, 'Danger zone'),
       del,
     ]);

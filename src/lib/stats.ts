@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { event } from '../db/schema.js'
+import { customEvent, event } from '../db/schema.js'
 
 // Shared stats query, used by the public api-key REST endpoint, the session-authed
 // dashboard endpoint and the MCP server. All validation errors are 400s so each
@@ -82,6 +82,21 @@ export async function computeStats(
     const keys = by.split(',').map((k) => k.trim()).filter(Boolean)
     const breakdowns: Record<string, unknown> = {}
     for (const key of keys) {
+      if (key === 'event') {
+        const evScope = and(eq(customEvent.projectId, proj.id), gte(customEvent.timestamp, since))
+        breakdowns[key] = (await db
+          .select({
+            name: customEvent.name,
+            visitors: sql<number>`count(distinct ${customEvent.visitorHash})::int`,
+            pageviews: sql<number>`count(*)::int`,
+          })
+          .from(customEvent)
+          .where(evScope)
+          .groupBy(customEvent.name)
+          .orderBy(desc(sql`count(*)`))
+          .limit(20)) as { name: string; visitors: number; pageviews: number }[]
+        continue
+      }
       const col = BREAKDOWNS[key]
       if (!col) return { ok: false, status: 400, error: 'Unknown by.' }
       const dim = sql.raw(`"${col}"`)

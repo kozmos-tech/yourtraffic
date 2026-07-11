@@ -151,3 +151,20 @@ export const event = pgTable(
   },
   (t) => [index('event_project_time_idx').on(t.projectId, t.timestamp)]
 )
+
+export const customEvent = pgTable(
+  'custom_event',
+  {
+    id: text('id').primaryKey(),
+    projectId: text('project_id')
+      .notNull()
+      .references(() => project.id, { onDelete: 'cascade' }),
+    timestamp: timestamp('timestamp')
+      .$defaultFn(() => new Date())
+      .notNull(),
+    name: text('name').notNull(),
+    pathname: text('pathname'),
+    visitorHash: text('visitor_hash').notNull(),
+  },
+  (t) => [index('custom_event_project_time_idx').on(t.projectId, t.timestamp)]
+)
