@@ -7,10 +7,19 @@ type User = { name?: string | null; email: string }
 type Project = { id: string; name: string; domain: string; visitors: number; series?: number[] }
 
 const sparkline = (series: number[]) => {
+  const w = 100
+  const h = 34
   const max = Math.max(1, ...series)
-  return `<div class="pj-spark">${series
-    .map((v) => `<span class="pj-spark-b" style="height:${v === 0 ? 2 : Math.max(6, Math.round((v / max) * 100))}%"></span>`)
-    .join('')}</div>`
+  const n = series.length
+  const x = (i: number) => (n < 2 ? 0 : (i / (n - 1)) * w)
+  const y = (v: number) => h - (v / max) * (h - 2) - 1
+  const pts = series.map((v, i) => `${x(i).toFixed(2)},${y(v).toFixed(2)}`)
+  const area = `M0,${h} L${pts.join(' L')} L${w},${h} Z`
+  const line = `M${pts.join(' L')}`
+  return `<svg class="pj-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <path class="pj-spark-fill" d="${area}" />
+    <path class="pj-spark-line" d="${line}" />
+  </svg>`
 }
 
 export const AppPage = ({ user, projects }: { user: User; projects: Project[] }) => {
