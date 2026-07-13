@@ -8,7 +8,11 @@ const signOutScript = `
   if (!btn) return;
   btn.addEventListener('click', async function () {
     btn.disabled = true;
-    await fetch('/api/auth/sign-out', { method: 'POST' }).catch(function () {});
+    await fetch('/api/auth/sign-out', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    }).catch(function () {});
     window.location.href = '/';
   });
 })();
