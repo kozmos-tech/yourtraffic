@@ -97,6 +97,27 @@ export async function computeStats(
           .limit(20)) as { name: string; visitors: number; pageviews: number }[]
         continue
       }
+
+      // prop:KEY breaks custom events down by the value of one custom property.
+      // Reuses the standard row shape so every caller renders it like any other.
+      if (key.startsWith('prop:')) {
+        const propKey = key.slice(5).trim()
+        if (!propKey) return { ok: false, status: 400, error: 'Missing property name.' }
+        const val = sql<string>`${customEvent.props} ->> ${propKey}`
+        const evScope = and(eq(customEvent.projectId, proj.id), gte(customEvent.timestamp, since))
+        breakdowns[key] = (await db
+          .select({
+            name: val,
+            visitors: sql<number>`count(distinct ${customEvent.visitorHash})::int`,
+            pageviews: sql<number>`count(*)::int`,
+          })
+          .from(customEvent)
+          .where(and(evScope, sql`${val} is not null`))
+          .groupBy(val)
+          .orderBy(desc(sql`count(*)`))
+          .limit(20)) as { name: string; visitors: number; pageviews: number }[]
+        continue
+      }
       const col = BREAKDOWNS[key]
       if (!col) return { ok: false, status: 400, error: 'Unknown by.' }
       const dim = sql.raw(`"${col}"`)
