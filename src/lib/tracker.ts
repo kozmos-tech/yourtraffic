@@ -43,9 +43,11 @@ export const tracker = /* js */ `(function () {
   }
   addEventListener('visibilitychange', function () { if (doc.visibilityState === 'hidden') leave(); });
   addEventListener('pagehide', leave);
-  function track(name) {
+  function track(name, props) {
     if (local() || typeof name !== 'string' || !name) return;
-    post(JSON.stringify({ n: 'event', e: name, u: loc.href }));
+    var body = { n: 'event', e: name, u: loc.href };
+    if (props && typeof props === 'object') body.p = props;
+    post(JSON.stringify(body));
   }
   try { window.yt = track; } catch (e) {}
   page();

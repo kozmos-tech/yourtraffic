@@ -38,7 +38,7 @@ const TOOLS = [
         by: {
           type: 'string',
           description:
-            'Optional breakdown dimension, or a comma list of them. One or more of page, referrer, country, browser, device, event.',
+            'Optional breakdown dimension, or a comma list of them. One or more of page, referrer, country, browser, device, event, or prop:KEY to break custom events down by a custom property value.',
         },
       },
       required: ['site'],
