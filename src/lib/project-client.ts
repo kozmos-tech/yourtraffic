@@ -131,9 +131,9 @@ export const projectClient = /* js */ `(function () {
       codeBlock('MCP endpoint', location.origin + '/mcp'),
       copyBtn(location.origin + '/mcp'),
       el('h4', null, 'Custom events'),
-      el('p', null, 'Call this from your own click or submit handlers to count an action. The name is up to you. Pass an optional object of properties as a second argument.'),
-      codeBlock('JavaScript', "window.yt('Signup', { plan: 'pro' })"),
-      copyBtn("window.yt('Signup', { plan: 'pro' })"),
+      el('p', null, 'Call this from your own click or submit handlers to count an action. The name is up to you.'),
+      codeBlock('JavaScript', "window.yt('Signup')"),
+      copyBtn("window.yt('Signup')"),
       el('h4', { class: 'db-danger-h' }, 'Danger zone'),
       del,
     ]);

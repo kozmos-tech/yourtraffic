@@ -14,7 +14,6 @@ import {
   normalizeDomain,
   parseUA,
   referrerHost,
-  sanitizeProps,
   visitorHash,
 } from '../lib/track.js'
 
@@ -53,15 +52,7 @@ api.post('/event', async (c) => {
   const raw = await c.req.text()
   if (!raw || raw.length > MAX_BODY) return c.body(null, 202)
 
-  let data: {
-    n?: string
-    u?: string
-    r?: string | null
-    i?: string
-    s?: number
-    e?: string
-    p?: unknown
-  }
+  let data: { n?: string; u?: string; r?: string | null; i?: string; s?: number; e?: string }
   try {
     data = JSON.parse(raw)
   } catch {
@@ -100,7 +91,6 @@ api.post('/event', async (c) => {
       projectId: evProj.id,
       name,
       pathname: clip(evUrl.pathname || '/', MAX_PATH),
-      props: sanitizeProps(data.p),
       visitorHash: await visitorHash(evProj.id, clientIp(c.req.raw.headers), evUa),
     })
     return c.body(null, 202)
