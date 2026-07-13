@@ -18,6 +18,7 @@ export const pages = new Hono()
 
 pages.get('/', async (c) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
+  c.header('Cache-Control', 'no-store')
   return c.html(doc(Landing({ loggedIn: !!session })))
 })
 
@@ -66,6 +67,7 @@ pages.get('/script.js', (c) =>
 // Project list. Each project shows its last-7-day visitor count, pulled in one
 // grouped query rather than one per card.
 pages.get('/app', async (c) => {
+  c.header('Cache-Control', 'no-store')
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
   if (!session) return c.redirect('/login')
 
@@ -122,6 +124,7 @@ pages.get('/app', async (c) => {
 
 // A single project's analytics. Only the owner can open it.
 pages.get('/app/:id', async (c) => {
+  c.header('Cache-Control', 'no-store')
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
   if (!session) return c.redirect('/login')
 
