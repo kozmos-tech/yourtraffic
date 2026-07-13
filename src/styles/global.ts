@@ -189,6 +189,9 @@ footer { padding: 44px 0; }
 .field input::placeholder { color: #b4b4b4; }
 .auth-btn { width: 100%; justify-content: center; padding: 11px 15px; margin-top: 2px; }
 .auth-btn:disabled { opacity: 0.6; cursor: default; }
+.auth-google { margin-top: 24px; gap: 9px; font-weight: 500; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin-top: 18px; color: var(--muted); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .auth-err { font-size: 13px; color: #dc2626; min-height: 0; }
 .auth-err:empty { display: none; }
 .auth-alt { font-size: 13px; color: var(--muted); margin-top: 18px; text-align: center; }

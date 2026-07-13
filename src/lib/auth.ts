@@ -9,6 +9,14 @@ import * as schema from '../db/schema.js'
 const base = process.env.BETTER_AUTH_URL
 const mcpResource = base ? new URL('/mcp', base).toString() : undefined
 
+const googleId = process.env.GOOGLE_CLIENT_ID
+const googleSecret = process.env.GOOGLE_CLIENT_SECRET
+const socialProviders =
+  googleId && googleSecret
+    ? { google: { clientId: googleId, clientSecret: googleSecret } }
+    : undefined
+export const googleEnabled = socialProviders !== undefined
+
 // better-auth: email + password, sessions in Postgres via Drizzle, plus the MCP
 // plugin which makes this app an OAuth authorization server for agent access.
 export const auth = betterAuth({
@@ -19,6 +27,7 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
   },
+  socialProviders,
   plugins: [
     mcp({
       // Where to send a signed-out user who starts an OAuth flow. After they sign

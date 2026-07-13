@@ -29,6 +29,7 @@ cp .env.example .env
 - `DATABASE_URL`. Your Postgres connection string. The app fails to start without it.
 - `BETTER_AUTH_SECRET`. A long random secret. Generate one with `openssl rand -base64 32`. Never ship the default, since visitor hashes are salted from it.
 - `BETTER_AUTH_URL`. The public origin of your deployment, like `https://analytics.example.com`. Use `http://localhost:3000` in development. This is also the origin MCP clients discover for OAuth, so it must be the exact public URL with no trailing path.
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Optional. Set both to enable Google sign-in on the login and signup pages. Create OAuth credentials in the Google Cloud console and add `BETTER_AUTH_URL` + `/api/auth/callback/google` as an authorized redirect URI. Leave them blank to hide the Google button.
 
 Create the database tables before the first run.
 
