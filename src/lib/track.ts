@@ -78,31 +78,6 @@ export function parseUA(ua: string): Agent {
   return { browser, os, device }
 }
 
-// Custom-event properties supplied by the site. Untrusted, so we keep only a
-// flat map of string/number/boolean values, bound the key count and lengths, and
-// drop everything else. Returns null when nothing usable remains, so a row only
-// carries props when it has real data.
-const MAX_PROP_KEYS = 12
-const MAX_PROP_KEY = 32
-const MAX_PROP_VALUE = 128
-
-export function sanitizeProps(input: unknown): Record<string, string | number | boolean> | null {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) return null
-  const out: Record<string, string | number | boolean> = {}
-  let count = 0
-  for (const [rawKey, value] of Object.entries(input as Record<string, unknown>)) {
-    if (count >= MAX_PROP_KEYS) break
-    const key = rawKey.trim().slice(0, MAX_PROP_KEY)
-    if (!key) continue
-    if (typeof value === 'string') out[key] = value.slice(0, MAX_PROP_VALUE)
-    else if (typeof value === 'number' && Number.isFinite(value)) out[key] = value
-    else if (typeof value === 'boolean') out[key] = value
-    else continue
-    count++
-  }
-  return count ? out : null
-}
-
 export function newId(): string {
   return crypto.randomUUID()
 }
