@@ -6,7 +6,7 @@ import { customEvent, event } from '../db/schema.js'
 // dashboard endpoint and the MCP server. All validation errors are 400s so each
 // caller can turn them into the right response for its transport.
 
-const PERIOD_DAYS: Record<string, number> = { '24h': 1, '7d': 7, '30d': 30, '12mo': 365 }
+const PERIOD_DAYS: Record<string, number> = { '24h': 1, '7d': 7, '30d': 30, '90d': 90, '12mo': 365 }
 const GROUPS = new Set(['hour', 'day', 'week', 'month'])
 const BREAKDOWNS: Record<string, string> = {
   page: 'pathname',

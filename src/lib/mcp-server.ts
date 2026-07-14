@@ -32,7 +32,7 @@ const TOOLS = [
         },
         period: {
           type: 'string',
-          enum: ['24h', '7d', '30d', '12mo'],
+          enum: ['24h', '7d', '30d', '90d', '12mo'],
           description: 'How far back to look. Defaults to 7d.',
         },
         by: {
