@@ -1,1 +1,0 @@
-ALTER TABLE "custom_event" ADD COLUMN "props" jsonb;
