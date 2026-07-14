@@ -6,7 +6,7 @@ import { customEvent, event } from '../db/schema.js'
 // dashboard endpoint and the MCP server. All validation errors are 400s so each
 // caller can turn them into the right response for its transport.
 
-const PERIOD_DAYS: Record<string, number> = { '24h': 1, '7d': 7, '30d': 30, '12mo': 365 }
+const PERIOD_DAYS: Record<string, number> = { '24h': 1, '7d': 7, '30d': 30, '90d': 90, '12mo': 365 }
 const GROUPS = new Set(['hour', 'day', 'week', 'month'])
 const BREAKDOWNS: Record<string, string> = {
   page: 'pathname',
@@ -93,27 +93,6 @@ export async function computeStats(
           .from(customEvent)
           .where(evScope)
           .groupBy(customEvent.name)
-          .orderBy(desc(sql`count(*)`))
-          .limit(20)) as { name: string; visitors: number; pageviews: number }[]
-        continue
-      }
-
-      // prop:KEY breaks custom events down by the value of one custom property.
-      // Reuses the standard row shape so every caller renders it like any other.
-      if (key.startsWith('prop:')) {
-        const propKey = key.slice(5).trim()
-        if (!propKey) return { ok: false, status: 400, error: 'Missing property name.' }
-        const val = sql<string>`${customEvent.props} ->> ${propKey}`
-        const evScope = and(eq(customEvent.projectId, proj.id), gte(customEvent.timestamp, since))
-        breakdowns[key] = (await db
-          .select({
-            name: val,
-            visitors: sql<number>`count(distinct ${customEvent.visitorHash})::int`,
-            pageviews: sql<number>`count(*)::int`,
-          })
-          .from(customEvent)
-          .where(and(evScope, sql`${val} is not null`))
-          .groupBy(val)
           .orderBy(desc(sql`count(*)`))
           .limit(20)) as { name: string; visitors: number; pageviews: number }[]
         continue

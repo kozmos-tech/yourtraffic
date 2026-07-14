@@ -32,13 +32,13 @@ const TOOLS = [
         },
         period: {
           type: 'string',
-          enum: ['24h', '7d', '30d', '12mo'],
+          enum: ['24h', '7d', '30d', '90d', '12mo'],
           description: 'How far back to look. Defaults to 7d.',
         },
         by: {
           type: 'string',
           description:
-            'Optional breakdown dimension, or a comma list of them. One or more of page, referrer, country, browser, device, event, or prop:KEY to break custom events down by a custom property value.',
+            'Optional breakdown dimension, or a comma list of them. One or more of page, referrer, country, browser, device, event.',
         },
       },
       required: ['site'],
