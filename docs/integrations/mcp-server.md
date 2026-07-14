@@ -1,3 +1,4 @@
+
 # MCP Server
 
 YourTraffic ships a native MCP (Model Context Protocol) server, so an AI agent can read your traffic directly. Point an agent at your instance and it can pull visitor counts, top pages, sources and trends on demand.
@@ -36,7 +37,7 @@ Clients that speak remote MCP can point straight at the endpoint. The endpoint a
 ## Tools
 
 - `list_websites`. Lists the websites on your account, each with its name and domain.
-- `get_stats`. Returns stats for one website. Takes `site` (the domain), an optional `period` (`24h`, `7d`, `30d`, `12mo`) and an optional `by` breakdown (`page`, `referrer`, `country`, `browser`, `device`, `event`).
+- `get_stats`. Returns stats for one website. Takes `site` (the domain), an optional `period` (`24h`, `7d`, `30d`, `90d`, `12mo`) and an optional `by` breakdown (`page`, `referrer`, `country`, `browser`, `device`, `event`).
 
 ## Authentication options
 

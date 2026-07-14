@@ -1,3 +1,4 @@
+
 # REST API
 
 Read your stats over a simple HTTP API and get clean JSON back. No scraping and no export files.
@@ -26,7 +27,7 @@ Returns visitors, pageviews and optional breakdowns for the authorized project.
 
 | Parameter | Values | Default | Description |
 | --- | --- | --- | --- |
-| `period` | `24h`, `7d`, `30d`, `12mo` | `7d` | The time range. |
+| `period` | `24h`, `7d`, `30d`, `90d`, `12mo` | `7d` | The time range. |
 | `group` | `hour`, `day`, `week`, `month` | Chosen from the period | Bucket size for the time series. |
 | `by` | `page`, `referrer`, `country`, `browser`, `device`, `event`, or a comma list | none | One or more breakdown dimensions. |
 
