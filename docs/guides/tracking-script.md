@@ -1,4 +1,3 @@
-
 # Tracking Script
 
 The tracking script is the only thing you add to your site. It is a few hundred bytes, sets no cookies, reads no storage and needs no configuration.
@@ -42,13 +41,7 @@ Track a specific action, such as a signup or a button click, by calling `window.
 window.yt('Signup')
 ```
 
-Pass an optional object of properties as a second argument to attach custom data to the event. Values may be strings, numbers or booleans.
-
-```js
-window.yt('Signup', { plan: 'pro' })
-```
-
-Events are counted by name, with no cookies. Read them back with the `by=event` breakdown on the [stats endpoint](../integrations/rest-api.md). Break a single property down by value with `by=prop:KEY`, for example `by=prop:plan`.
+Events are counted by name, with no cookies and no custom properties. Read them back with the `by=event` breakdown on the [stats endpoint](../integrations/rest-api.md).
 
 ## Local development is ignored
 
