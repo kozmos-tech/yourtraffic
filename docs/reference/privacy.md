@@ -1,3 +1,4 @@
+
 # Privacy and Compliance
 
 YourTraffic is privacy-first by design. It sets no cookies and stores no personal data, so there is no consent banner and compliance with GDPR, CCPA and PECR comes by default.
@@ -21,6 +22,8 @@ From each pageview beacon YourTraffic derives:
 - Country, browser, operating system and device.
 - A rotating, salted visitor hash.
 - Time on page, from a short leave beacon.
+
+Custom events may also carry a set of custom properties you pass in from your own code. These are values you choose to send, such as a plan name, and are limited to strings, numbers and booleans.
 
 No cookies. No storage on the visitor's device. No personal data.
 

@@ -1,3 +1,4 @@
+
 # FAQ
 
 ## Do I need a cookie consent banner?
@@ -22,7 +23,7 @@ Yes. The script follows client-side navigation on its own and records a pageview
 
 ## Can I track custom events?
 
-Yes. Call `window.yt('EventName')` from your own click or submit handler. Events are counted by name and read back with the `by=event` breakdown on the [stats endpoint](../integrations/rest-api.md).
+Yes. Call `window.yt('EventName')` from your own click or submit handler. You can pass an optional object of custom properties as a second argument, for example `window.yt('Signup', { plan: 'pro' })`. Events are counted by name and read back with the `by=event` breakdown on the [stats endpoint](../integrations/rest-api.md), and a single property can be broken down by value with `by=prop:KEY`.
 
 ## Can I read my stats programmatically?
 
