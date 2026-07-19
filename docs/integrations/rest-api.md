@@ -28,7 +28,7 @@ Returns visitors, pageviews and optional breakdowns for the authorized project.
 | --- | --- | --- | --- |
 | `period` | `24h`, `7d`, `30d`, `12mo` | `7d` | The time range. |
 | `group` | `hour`, `day`, `week`, `month` | Chosen from the period | Bucket size for the time series. |
-| `by` | `page`, `referrer`, `country`, `browser`, `device`, `event`, or a comma list | none | One or more breakdown dimensions. |
+| `by` | `page`, `referrer`, `country`, `browser`, `os`, `device`, `event`, or a comma list | none | One or more breakdown dimensions. |
 
 ### Response shape
 
