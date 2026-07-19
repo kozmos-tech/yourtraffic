@@ -13,6 +13,7 @@ const BREAKDOWNS: Record<string, string> = {
   referrer: 'referrer',
   country: 'country',
   browser: 'browser',
+  os: 'os',
   device: 'device',
 }
 
